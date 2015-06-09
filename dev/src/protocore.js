@@ -424,15 +424,15 @@ ProtoCoreJS.prototype = {
     }
 };
 
-protocore = new ProtoCoreJS();
+ProtoCore = new ProtoCoreJS();
 
-protocore.factory(this, 'extend', function (method) {
+ProtoCore.factory(this, 'extend', function (method) {
     // helper function
     var instance = this;
     
     var _wrap = function (objectInstance, parentInstance) {
         if (!objectInstance.hasProperty) {
-            protocore.implement(objectInstance,
+            ProtoCore.implement(objectInstance,
                 'hasProperty',
                 function (property) {
                     var _ret = false;
@@ -448,12 +448,12 @@ protocore.factory(this, 'extend', function (method) {
 
                     return _ret;
                 }, 
-                protocore.MODE_LOCKED & protocore.MODE_HIDDEN
+                ProtoCore.MODE_LOCKED & ProtoCore.MODE_HIDDEN
             );
         }
 
         if (!objectInstance.getPropertyDescriptor) {
-            protocore.implement(objectInstance, 
+            ProtoCore.implement(objectInstance, 
                 'getPropertyDescriptor', 
                 function (property) {
                     var _ret = false;
@@ -470,7 +470,7 @@ protocore.factory(this, 'extend', function (method) {
 
                     return _ret;
                 }, 
-                protocore.MODE_LOCKED & protocore.MODE_HIDDEN
+                ProtoCore.MODE_LOCKED & ProtoCore.MODE_HIDDEN
             );
         }
     };
@@ -489,18 +489,18 @@ protocore.factory(this, 'extend', function (method) {
             }
 
             var methodMode = 0;
-            var desc = protocore.descriptor(parentInstance, parentMethod);
+            var desc = ProtoCore.descriptor(parentInstance, parentMethod);
 
             if (!desc.writable) {
-                methodMode = methodMode | protocore.MODE_READONLY;
+                methodMode = methodMode | ProtoCore.MODE_READONLY;
             }
 
             if (!desc.configurable) {
-                methodMode = methodMode | protocore.MODE_LOCKED;
+                methodMode = methodMode | ProtoCore.MODE_LOCKED;
             }
 
             if (!desc.enumerable) {
-                methodMode = methodMode | protocore.MODE_HIDDEN;
+                methodMode = methodMode | ProtoCore.MODE_HIDDEN;
             }
 
             instance.implement(objectInstance, parentMethod, parentInstance[parentMethod], methodMode);
@@ -508,7 +508,7 @@ protocore.factory(this, 'extend', function (method) {
     };
 });
 
-protocore.mode(protocore, [
+ProtoCore.mode(ProtoCore, [
     "MODE_HIDDEN", "MODE_LOCKED", "MODE_PROPERTY", "MODE_READONLY",
     'implement', 'factory', 'mode', 'extend', 'include', 'serialize', 'unserialize',
     'clone', 'cast', 'traverse', 'instantiate', 'descriptor',
@@ -516,4 +516,4 @@ protocore.mode(protocore, [
     'guid',
     'isFlaged', 'isFunction', 'isObject', 'isArray', 'isDefined', 'isString',
     'load'
-], protocore.MODE_LOCKED);
+], ProtoCore.MODE_LOCKED);

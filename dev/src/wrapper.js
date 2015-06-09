@@ -2,16 +2,16 @@
 (function () {
 var factory = function () {
 //::PROTOCORE_JS:://
-    return protocore;
+    return ProtoCore;
 };
 
 if (typeof define === 'function' && define.amd) {
     define([], factory);
 } else if (typeof module !== 'undefined' && module.exports) { //Node
-    module.exports = factory(require());
+    module.exports = factory();
 } else {
     /*jshint sub:true */
-    window['protocore'] = factory();
+    window['ProtoCore'] = factory();
 }
 
 }());

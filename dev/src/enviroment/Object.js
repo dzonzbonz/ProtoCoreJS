@@ -1,5 +1,3 @@
-ProtoCore.Enviroment = ProtoCore.Enviroment || {};
-
 /**
  * Base class
  * @constructor
@@ -8,6 +6,7 @@ ProtoCore.Enviroment = ProtoCore.Enviroment || {};
 ProtoCore.Enviroment.Object = function () {
     var _guid = ProtoCore.guid(4),
         _data = {};
+    
     var _instantiated = false;
     
     ProtoCore.extend(this);
@@ -78,5 +77,4 @@ ProtoCore.Enviroment.Object = function () {
 };
 
 ProtoCore.Enviroment.Object.prototype.constructor = ProtoCore.Enviroment.Object;
-ProtoCore.register('ProtoCore.Enviroment.Object', ProtoCore.Enviroment.Object);
 ProtoCore.mode(ProtoCore.Enviroment, 'Object', ProtoCore.MODE_LOCKED);
