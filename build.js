@@ -7,7 +7,6 @@ var FILE_ENCODING = 'utf-8',
     DIST_PATH = DIST_DIR +'/'+ DIST_NAME,
     DIST_MIN_PATH = DIST_DIR +'/'+ DIST_MIN_NAME;
 
-
 var _fs = require('fs'),
     _path = require('path'),
     _pkg = JSON.parse(readFile('package.json')),

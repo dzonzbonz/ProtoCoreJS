@@ -1,3 +1,11 @@
+/** @license
+ * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
+ * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
+ * v0.0.1 (2015/06/09 12:49)
+ */
+
+(function () {
+var factory = function () {
 
 /**
  * @constructor
@@ -451,4 +459,18 @@ ProtoCoreJS.prototype = {
 };
 
 protocore = new ProtoCoreJS();
-protocore.VERSION = '::VERSION_NUMBER::';
+protocore.VERSION = '0.0.1';
+    return protocore;
+};
+
+if (typeof define === 'function' && define.amd) {
+    define([], factory);
+} else if (typeof module !== 'undefined' && module.exports) { //Node
+    module.exports = factory(require());
+} else {
+    /*jshint sub:true */
+    window['protocore'] = factory();
+}
+
+}());
+
