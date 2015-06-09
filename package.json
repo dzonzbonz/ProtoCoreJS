@@ -1,0 +1,34 @@
+{
+    "name" : "protocore-js",
+    "description" : "Usefull libraries for making quick web based apps",
+    "keywords" : ["protocore", "enviroment", "loader"],
+    "homepage" : "https://github.com/dzonzbonz/ProtoCoreJS",
+    "version" : "0.0.1",
+    "author" : {
+        "name" : "Nikola Ivanovic - Dzonz Bonz",
+        "url" : "http://www.ekonom.rs/"
+    },
+    "repository" : {
+        "type" : "git",
+        "url" : "https://github.com/dzonzbonz/ProtoCoreJS.git"
+    },
+    "main" : "dist/crossroads.js",
+    "bugs" : {
+        "url" : "https://github.com/dzonzbonz/ProtoCoreJS.git/issues"
+    },
+    "licenses" : [
+        {
+            "type" : "MIT",
+            "url" : "http://www.opensource.org/licenses/mit-license.php"
+        }
+    ],
+    "dependencies" : {
+        
+    },
+    "devDependencies" : {
+        "uglify-js" : "~1.2.3"
+    },
+    "scripts" : {
+        "pretest" : "node build"
+    }
+}
