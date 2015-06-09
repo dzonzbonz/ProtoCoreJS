@@ -1,7 +1,7 @@
 /** @license
  * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
  * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
- * v0.0.1 (2015/06/09 12:49)
+ * v0.0.1 (2015/06/09 12:59)
  */
 
 (function () {
