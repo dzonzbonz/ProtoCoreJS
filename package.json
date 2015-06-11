@@ -12,7 +12,7 @@
         "type" : "git",
         "url" : "https://github.com/dzonzbonz/ProtoCoreJS.git"
     },
-    "main" : "dist/crossroads.js",
+    "main" : "dist/c.js",
     "bugs" : {
         "url" : "https://github.com/dzonzbonz/ProtoCoreJS.git/issues"
     },

@@ -1,9 +1,37 @@
 
+var buildConfig = {
+    'protocore': {
+        'src': 'dev/src',
+        'dist': {
+            'dir': 'dist',
+            'name': 'c.js',
+            'min_name': 'c.min.js'
+        },
+        'deploy': {
+            PROTOCORE_JS        : '/protocore.js'
+        }
+    },
+    'enviroment': {
+        'src': 'dev/src/enviroment',
+        'dist': {
+            'dir': 'dist',
+            'name': 'c.enviroment.js',
+            'min_name': 'c.enviroment.min.js'
+        },
+        'deploy': {
+            OBJECT_JS          : '/object.js',
+            EVENT_DATA_JS      : '/event-data.js',
+            EVENT_JS           : '/event.js'
+        }
+    }
+};
+
 var FILE_ENCODING = 'utf-8',
     SRC_DIR = 'dev/src',
     DIST_DIR = 'dist',
     DIST_NAME = 'protocore.js',
     DIST_MIN_NAME = 'protocore.min.js',
+    LICENSE_PATH = SRC_DIR + '/license.txt',
     DIST_PATH = DIST_DIR +'/'+ DIST_NAME,
     DIST_MIN_PATH = DIST_DIR +'/'+ DIST_MIN_NAME;
 
@@ -21,8 +49,8 @@ var _fs = require('fs'),
     };
 
 
-function purgeDeploy(){
-    [DIST_PATH, DIST_MIN_PATH].forEach(function(filePath){
+function purgeDeploy(distPath, distMinPath) {
+    [distPath, distMinPath].forEach(function(filePath){
         if( _fs.existsSync(filePath) ){
             _fs.unlinkSync(filePath);
         }
@@ -31,15 +59,22 @@ function purgeDeploy(){
 }
 
 
-function build(){
-    var wrapper = readFile(SRC_DIR + '/wrapper.js'),
-        deploy = tmpl(wrapper, {
-            LICENSE             : readFile(SRC_DIR + '/license.txt'),
-            PROTOCORE_JS        : readFile(SRC_DIR + '/protocore.js')
-        }, /\/\/::(\w+)::\/\//g);
+function build(config) {
+    var deployFiles = {
+        LICENSE: readFile(LICENSE_PATH)
+    };
+    
+    for (var fileKey in config['deploy']) {
+        deployFiles[fileKey] = readFile(config['src'] + config['deploy'][fileKey]);
+    }
+    
+    var distPath = config['dist']['dir'] + '/' + config['dist']['name'];
+    
+    var wrapper = readFile(config['src'] + '/wrapper.js'),
+        deploy = tmpl(wrapper, deployFiles, /\/\/::(\w+)::\/\//g);
 
-    _fs.writeFileSync(DIST_PATH, tmpl(deploy, _replacements), FILE_ENCODING);
-    console.log(' '+ DIST_PATH +' built.');
+    _fs.writeFileSync(distPath, tmpl(deploy, _replacements), FILE_ENCODING);
+    console.log(' '+ distPath +' built.');
 }
 
 
@@ -70,11 +105,15 @@ function uglify(srcPath) {
 }
 
 
-function minify(){
-    var license = tmpl( readFile(SRC_DIR +'/license.txt'), _replacements );
+function minify(config) {
+    var distPath = config['dist']['dir'] + '/' + config['dist']['name'];
+    var distMinPath = config['dist']['dir'] + '/' + config['dist']['min_name'];
+    
+    var license = tmpl( readFile(LICENSE_PATH), _replacements );
+    
     // we add a leading/trailing ";" to avoid concat issues (#73)
-    _fs.writeFileSync(DIST_MIN_PATH, license +';'+ uglify(DIST_PATH) +';', FILE_ENCODING);
-    console.log(' '+ DIST_MIN_PATH +' built.');
+    _fs.writeFileSync(distMinPath, license + ';' + uglify(distPath) + ';', FILE_ENCODING);
+    console.log(' '+ distMinPath +' built.');
 }
 
 
@@ -89,7 +128,9 @@ function pad(val){
 
 
 // --- run ---
-purgeDeploy();
-build();
-minify();
+for (var buildScript in buildConfig) {
+    purgeDeploy(buildConfig[buildScript]);
+    build(buildConfig[buildScript]);
+    minify(buildConfig[buildScript]);
+}
 

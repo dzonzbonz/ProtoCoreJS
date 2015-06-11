@@ -1,166 +1,197 @@
-ProtoCore.Enviroment.Event = function (initialData) {
+/**
+ * @constructor
+ * @param {Object} _callContext
+ * @param {Function} actionBefore
+ * 
+ * @returns {C.Enviroment.Event}
+ */
+C.Enviroment.Event = function (actionAfter, actionBefore, callContext) {
     
-    this.stopPropagation = function () {};
+    this.subscribe = function (callable) {};
+
+    this.notify = function (eventData) {};
+
+    this.empty = function () {};
+
+    this.reset = function () {};
+
+    this.suspend = function () {};
+
+    this.resume = function () {};
     
-    this.continuePropagation = function () {};
-    
-    this.preventDefault = function () {};
-    
-    this.assumeDefault = function () {};
-    
-    this.stopped = function () {};
-    
-    this.assumed = function () {};
 };
 
-ProtoCore.Enviroment.EventData.prototype = new ProtoCore.Enviroment.Object();
-ProtoCore.Enviroment.EventData.prototype.constructor = ProtoCore.Enviroment.EventData;
+C.Enviroment.Event.prototype = new C.Enviroment.Object();
+C.Enviroment.Event.prototype.constructor = C.Enviroment.Event;
 
-ProtoCore.factory(ProtoCore.Enviroment, 'EventData', function () {
+C.factory(C.Enviroment, 'Event', function () {
     /**
-     * @extends ProtoCore.Enviroment.Object
-     * @returns {undefined}
+     * @constructor
+     * @extends C.Enviroment.Object
+     * @returns {C.Enviroment.Event}
      */
-    var __constructor = function (initialData) {
+    var __constructor = function (actionAfter, actionBefore, callContext) {
     /* Variables */
-        var eventResult = null,
-            breakEvent = false,
-            defaultAction = true;
+        var eventsData = {
+            'before': C.isDefined(actionBefore) ? actionBefore : function () {},
+            'after': C.isDefined(actionAfter) ? actionAfter : function () {},
+            'subscribers': []
+        },
+        eventsSuspended = 0,
+        defaultCallContext = callContext;
 
     /* Inheritance */
-        var parent = new ProtoCore.Enviroment.Object();
-        ProtoCore.extend(this, parent);
+        var parent = new C.Enviroment.Object();
+        C.extend(this, parent);
     
     /* Implementation */
-        /**
-         * Stops event propagation
-         * @returns {ProtoCore.Enviroment.EventData}
-         */
-        this.stopPropagation = function () {
-            breakEvent = true;
+        this.subscribe = function (callable) {
+            eventsData['subscribers'].push({
+                delegate: C.isArray(callable) ? callable[1] : callable,
+                context: C.isArray(callable) ? callable[0] : defaultCallContext
+            });
+
             return this;
         };
 
         /**
-         * Continues event propagation
-         * @returns {ProtoCore.Enviroment.EventData}
+         * Notifies registered subscribers
+         * 
+         * @param {C.Enviroment.EventData} eventData
+         * @returns {C.Enviroment.Event}
          */
-        this.continuePropagation = function () {
-            breakEvent = false;
+        this.notify = function (eventData, _backupCallContext) {
+            var _instance = defaultCallContext;
+
+            if (_backupCallContext) {
+                _instance = _backupCallContext;
+            }
+
+            if (eventsSuspended > 0)
+                return this;
+            else
+                this.reset();
+
+            if (C.isFunction(eventsData.before)) {
+                eventsData.before.call(_instance, eventData);
+            }
+
+            if (!eventData.stoped()) {
+                var _delegates = eventsData['subscribers'];
+                for (var _index in _delegates) {
+                    var _delegate = _delegates[_index].delegate;
+                        _delegate.call(_delegates[_index].context || _instance, eventData, _backupCallContext);
+                    if (eventData.stoped())
+                        break;
+                }
+            }
+
+            if (eventData.assumed()) {
+                if (C.isFunction(eventsData.after)) {
+                    eventsData.after.call(_instance, eventData, _instance);
+                }
+            }
+
             return this;
         };
 
-        /**
-         * Prevents default action
-         * @returns {ProtoCore.Enviroment.EventData}
-         */
-        this.preventDefault = function () {
-            defaultAction = false;
+        this.empty = function () {
+            if (!eventsData)
+                eventsData['subscribers'] = new Array();
+            eventsSuspended = 0;
             return this;
         };
 
-        /**
-         * Assumes the default action
-         * @returns {ProtoCore.Enviroment.EventData}
-         */
-        this.assumeDefault = function () {
-            defaultAction = true;
+        this.reset = function () {
+            eventsSuspended = 0;
             return this;
         };
 
-        /**
-         * Is event propagation stopped
-         * @returns {Boolean}
-         */
-        this.stoped = function () {
-            return breakEvent;
+        this.suspend = function () {
+            eventsSuspended++;
+            return this;
         };
 
-        /**
-         * Is event assuming the default action
-         * @returns {Boolean}
-         */
-        this.assumed = function () {
-            return defaultAction;
+        this.resume = function () {
+            eventsSuspended--;
+            return this;
         };
-
-        /* Constructor */
-        this.data(initialData);
         
-        ProtoCore.mode(this, [
+        C.mode(this, [
             'assumed', 'stoped', 'assumeDefault', 'preventDefault',
             'continuePropagation', 'stopPropagation'
-        ], ProtoCore.MODE_LOCKED);
+        ], C.MODE_LOCKED);
     };
     
-    __constructor.prototype = new ProtoCore.Enviroment.EventData();
+    __constructor.prototype = new C.Enviroment.Object();
+    __constructor.prototype.constructor = C.Enviroment.Event;
     
     return __constructor;
 });
 
 ///**
-// * @namespace ProtoCore.Enviroment;
+// * @namespace C.Enviroment;
 // * 
 // * @class Event;
 // * 
 // * @constructor
 // * 
-// * @uses ProtoCore.Enviroment.Object;
+// * @uses C.Enviroment.Object;
 // * 
 // * @param {type} _initialData
 // * 
-// * @returns {ProtoCore.Enviroment.EventData}
+// * @returns {C.Enviroment.EventData}
 // */
-//ProtoCore.Enviroment.EventData = function (_initialData) {
+//C.Enviroment.EventData = function (_initialData) {
 //    /* Variables */
 //    var _result = null,
 //        _break = false,
 //        _default = true;
 //
 //    /* Inheritance */
-//    var parent = new ProtoCore.Enviroment.Object();
-//    ProtoCore.extend(this, parent);
+//    var parent = new C.Enviroment.Object();
+//    C.extend(this, parent);
 //    
 //    /* Implementation */
 //    /**
 //     * Stops event propagation
-//     * @returns {ProtoCore.Enviroment.EventData}
+//     * @returns {C.Enviroment.EventData}
 //     */
 //    this.stopPropagation = function () {
 //        _break = true;
 //        return this;
 //    };
-//    ProtoCore.mode(this, 'stopPropagation', ProtoCore.MODE_LOCKED);
+//    C.mode(this, 'stopPropagation', C.MODE_LOCKED);
 //
 //    /**
 //     * Continues event propagation
-//     * @returns {ProtoCore.Enviroment.EventData}
+//     * @returns {C.Enviroment.EventData}
 //     */
 //    this.continuePropagation = function () {
 //        _break = false;
 //        return this;
 //    };
-//    ProtoCore.mode(this, 'continuePropagation', ProtoCore.MODE_LOCKED);
+//    C.mode(this, 'continuePropagation', C.MODE_LOCKED);
 //
 //    /**
 //     * Prevents default action
-//     * @returns {ProtoCore.Enviroment.EventData}
+//     * @returns {C.Enviroment.EventData}
 //     */
 //    this.preventDefault = function () {
 //        _default = false;
 //        return this;
 //    };
-//    ProtoCore.mode(this, 'preventDefault', ProtoCore.MODE_LOCKED);
+//    C.mode(this, 'preventDefault', C.MODE_LOCKED);
 //
 //    /**
 //     * Assumes the default action
-//     * @returns {ProtoCore.Enviroment.EventData}
+//     * @returns {C.Enviroment.EventData}
 //     */
 //    this.assumeDefault = function () {
 //        _default = true;
 //        return this;
 //    };
-//    ProtoCore.mode(this, 'assumeDefault', ProtoCore.MODE_LOCKED);
+//    C.mode(this, 'assumeDefault', C.MODE_LOCKED);
 //
 //    /**
 //     * Is event propagation stopped
@@ -169,7 +200,7 @@ ProtoCore.factory(ProtoCore.Enviroment, 'EventData', function () {
 //    this.stoped = function () {
 //        return _break;
 //    };
-//    ProtoCore.mode(this, 'stoped', ProtoCore.MODE_LOCKED);
+//    C.mode(this, 'stoped', C.MODE_LOCKED);
 //
 //    /**
 //     * Is event assuming the default action
@@ -178,35 +209,35 @@ ProtoCore.factory(ProtoCore.Enviroment, 'EventData', function () {
 //    this.assumed = function () {
 //        return _default;
 //    };
-//    ProtoCore.mode(this, 'assumed', ProtoCore.MODE_LOCKED);
+//    C.mode(this, 'assumed', C.MODE_LOCKED);
 //
 //    /* Constructor */
 //    this.data(_initialData);
 //};
-//ProtoCore.Enviroment.EventData.prototype = new ProtoCore.Enviroment.Object();
-//ProtoCore.Enviroment.EventData.prototype.constructor = ProtoCore.Enviroment.EventData;
-//ProtoCore.register('ProtoCore.Enviroment.EventData', ProtoCore.Enviroment.EventData);
-//ProtoCore.mode(ProtoCore.Enviroment, 'EventData', ProtoCore.MODE_LOCKED);
+//C.Enviroment.EventData.prototype = new C.Enviroment.Object();
+//C.Enviroment.EventData.prototype.constructor = C.Enviroment.EventData;
+//C.register('C.Enviroment.EventData', C.Enviroment.EventData);
+//C.mode(C.Enviroment, 'EventData', C.MODE_LOCKED);
 
-ProtoCore = ProtoCore || {};
-ProtoCore.Enviroment = ProtoCore.Enviroment || {};
+C = C || {};
+C.Enviroment = C.Enviroment || {};
 
 /**
- * @namespace ProtoCore.Enviroment;
+ * @namespace C.Enviroment;
  * 
  * @class Event;
  * 
  * @constructor
  * 
- * @uses ProtoCore.Enviroment.EventData;
+ * @uses C.Enviroment.EventData;
  * 
  * @param {type} _callContext
  * @param {type} _defaultBefore
  * @param {type} _defaultAfter
  * 
- * @returns {ProtoCore.Enviroment.Event}
+ * @returns {C.Enviroment.Event}
  */
-ProtoCore.Enviroment.Event = function (_callContext, _defaultBefore, _defaultAfter) {
+C.Enviroment.Event = function (_callContext, _defaultBefore, _defaultAfter) {
     /* Variables */
     var _events = {
             'before': _defaultBefore || function () {},
@@ -222,7 +253,7 @@ ProtoCore.Enviroment.Event = function (_callContext, _defaultBefore, _defaultAft
     this.subscribe = function (_function, _overridedCallContext) {
         _events['subscribers'].push({
             delegate: _function,
-            owner: _overridedCallContext ? _overridedCallContext : _defaultCallContext
+            context: _overridedCallContext ? _overridedCallContext : _defaultCallContext
         });
 
         return this;
@@ -231,8 +262,8 @@ ProtoCore.Enviroment.Event = function (_callContext, _defaultBefore, _defaultAft
     /**
      * Notifies registered subscribers
      * 
-     * @param {ProtoCore.Enviroment.EventData} _eventData
-     * @returns {ProtoCore.Enviroment.Event}
+     * @param {C.Enviroment.EventData} _eventData
+     * @returns {C.Enviroment.Event}
      */
     this.notify = function (_eventData, _backupCallContext) {
         var _instance = _defaultCallContext;
@@ -254,7 +285,7 @@ ProtoCore.Enviroment.Event = function (_callContext, _defaultBefore, _defaultAft
             var _delegates = _events['subscribers'];
             for (var _index in _delegates) {
                 var _delegate = _delegates[_index].delegate;
-                _delegate.call(_delegates[_index].owner || _instance, _eventData, _backupCallContext);
+                _delegate.call(_delegates[_index].context || _instance, _eventData, _backupCallContext);
                 if (_eventData.stoped())
                     break;
             }
@@ -291,11 +322,11 @@ ProtoCore.Enviroment.Event = function (_callContext, _defaultBefore, _defaultAft
         return this;
     };
     
-    ProtoCore.mode(this, 'subscribe', ProtoCore.MODE_LOCKED);
-    ProtoCore.mode(this, 'notify', ProtoCore.MODE_LOCKED);
-    ProtoCore.mode(this, 'empty', ProtoCore.MODE_LOCKED);
-    ProtoCore.mode(this, 'reset', ProtoCore.MODE_LOCKED);
-    ProtoCore.mode(this, 'suspend', ProtoCore.MODE_LOCKED);
-    ProtoCore.mode(this, 'resume', ProtoCore.MODE_LOCKED);
+    C.mode(this, 'subscribe', C.MODE_LOCKED);
+    C.mode(this, 'notify', C.MODE_LOCKED);
+    C.mode(this, 'empty', C.MODE_LOCKED);
+    C.mode(this, 'reset', C.MODE_LOCKED);
+    C.mode(this, 'suspend', C.MODE_LOCKED);
+    C.mode(this, 'resume', C.MODE_LOCKED);
 };
-ProtoCore.mode(ProtoCore.Enviroment, 'Event', ProtoCore.MODE_LOCKED);
+C.mode(C.Enviroment, 'Event', C.MODE_LOCKED);

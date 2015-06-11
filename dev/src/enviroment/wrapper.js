@@ -1,21 +1,18 @@
 //::LICENSE:://
 (function () {
-var factory = function (namespace) {
-    namespace.Enviroment = {};
-//::PROTOCORE_OBJECT_JS:://
-//::PROTOCORE_OBJECT_JS:://
-//::PROTOCORE_EVENT_DATA_JS:://
-//::PROTOCORE_EVENT_JS:://
-    return namespace.Enviroment;
+var factory = function (C) {
+    C.Enviroment = {};
+//::OBJECT_JS:://
+    return C.Enviroment;
 };
 
 if (typeof define === 'function' && define.amd) {
-    define(['ProtoCore'], factory);
+    define(['C'], factory);
 } else if (typeof module !== 'undefined' && module.exports) { //Node
     module.exports = factory(require());
 } else {
     /*jshint sub:true */
-    window['ProtoCore.Enviroment'] = factory(ProtoCore);
+    window['C.Enviroment'] = factory(C);
 }
 
 }());

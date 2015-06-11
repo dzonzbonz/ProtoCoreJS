@@ -1,4 +1,9 @@
-ProtoCore.Enviroment.Object = function () {
+/**
+ * 
+ * @constructor
+ * @returns {C.Enviroment.Object}
+ */
+C.Enviroment.Object = function () {
     
     this.guid = function () {};
     
@@ -11,32 +16,32 @@ ProtoCore.Enviroment.Object = function () {
     this.toJSON = function () {};
 };
 
-ProtoCore.factory(ProtoCore.Enviroment, 'Object', function () {
+C.factory(C.Enviroment, 'Object', function () {
     var __constructor = function () {
-        var objectGUID = ProtoCore.guid(4);
+        var objectGUID = C.guid(4);
         var objectData = {};
         
-        ProtoCore.extend(this);
+        C.extend(this);
         
         this.guid = function () {
             return objectGUID;
         };
-        ProtoCore.mode(this, 'guid', ProtoCore.MODE_LOCKED);
+        C.mode(this, 'guid', C.MODE_LOCKED);
         
         this.data = function (key, value) {
-            if (ProtoCore.isDefined(value)) {
-                if (!ProtoCore.isDefined(key)) {
+            if (C.isDefined(value)) {
+                if (!C.isDefined(key)) {
                 // GETTER
                     return objectData;
                 } 
-                else if (ProtoCore.isArray(key)
-                        || ProtoCore.isObject(key)) {
+                else if (C.isArray(key)
+                        || C.isObject(key)) {
                 // SETTER
                     objectData = key;
                 } 
                 else {
                 // GETTER
-                    if (!ProtoCore.isDefined(objectData[key])) {
+                    if (!C.isDefined(objectData[key])) {
                         return null;
                     }
                     return objectData[key];
@@ -60,7 +65,7 @@ ProtoCore.factory(ProtoCore.Enviroment, 'Object', function () {
         this.unserialize = function (serialized) {
             if (serialized['guid']) {
                 objectGUID = serialized['guid'];
-                objectData = ProtoCore.unserialize(serialized['data']);
+                objectData = C.unserialize(serialized['data']);
             }
             return this;
         };
@@ -72,13 +77,13 @@ ProtoCore.factory(ProtoCore.Enviroment, 'Object', function () {
         this.toJSON = function () {
             return {
                 'guid': objectGUID,
-                'data': ProtoCore.serialize(objectData)
+                'data': C.serialize(objectData)
             };
         };
         
     };
     
-    __constructor.prototype = new ProtoCore.Enviroment.Object();
+    __constructor.prototype = new C.Enviroment.Object();
     
     return __constructor;
-}, ProtoCore.MODE_LOCKED);
+}, C.MODE_LOCKED);

@@ -2,7 +2,7 @@
 (function () {
 var factory = function () {
 //::PROTOCORE_JS:://
-    return ProtoCore;
+    return C;
 };
 
 if (typeof define === 'function' && define.amd) {
@@ -11,7 +11,7 @@ if (typeof define === 'function' && define.amd) {
     module.exports = factory();
 } else {
     /*jshint sub:true */
-    window['ProtoCore'] = factory();
+    window['C'] = factory();
 }
 
 }());

@@ -1,4 +1,4 @@
-ProtoCore.Enviroment.EventData = function (initialData) {
+C.Enviroment.EventData = function (initialData) {
     
     this.stopPropagation = function () {};
     
@@ -13,13 +13,13 @@ ProtoCore.Enviroment.EventData = function (initialData) {
     this.assumed = function () {};
 };
 
-ProtoCore.Enviroment.EventData.prototype = new ProtoCore.Enviroment.Object();
-ProtoCore.Enviroment.EventData.prototype.constructor = ProtoCore.Enviroment.EventData;
+C.Enviroment.EventData.prototype = new C.Enviroment.Object();
+C.Enviroment.EventData.prototype.constructor = C.Enviroment.EventData;
 
-ProtoCore.factory(ProtoCore.Enviroment, 'EventData', function () {
+C.factory(C.Enviroment, 'EventData', function () {
     /**
-     * @extends ProtoCore.Enviroment.Object
-     * @returns {undefined}
+     * @extends C.Enviroment.Object
+     * @returns {C.Enviroment.EventData}
      */
     var __constructor = function (initialData) {
     /* Variables */
@@ -28,13 +28,13 @@ ProtoCore.factory(ProtoCore.Enviroment, 'EventData', function () {
             defaultAction = true;
 
     /* Inheritance */
-        var parent = new ProtoCore.Enviroment.Object();
-        ProtoCore.extend(this, parent);
+        var parent = new C.Enviroment.Object();
+        C.extend(this, parent);
     
     /* Implementation */
         /**
          * Stops event propagation
-         * @returns {ProtoCore.Enviroment.EventData}
+         * @returns {C.Enviroment.EventData}
          */
         this.stopPropagation = function () {
             breakEvent = true;
@@ -43,7 +43,7 @@ ProtoCore.factory(ProtoCore.Enviroment, 'EventData', function () {
 
         /**
          * Continues event propagation
-         * @returns {ProtoCore.Enviroment.EventData}
+         * @returns {C.Enviroment.EventData}
          */
         this.continuePropagation = function () {
             breakEvent = false;
@@ -52,7 +52,7 @@ ProtoCore.factory(ProtoCore.Enviroment, 'EventData', function () {
 
         /**
          * Prevents default action
-         * @returns {ProtoCore.Enviroment.EventData}
+         * @returns {C.Enviroment.EventData}
          */
         this.preventDefault = function () {
             defaultAction = false;
@@ -61,7 +61,7 @@ ProtoCore.factory(ProtoCore.Enviroment, 'EventData', function () {
 
         /**
          * Assumes the default action
-         * @returns {ProtoCore.Enviroment.EventData}
+         * @returns {C.Enviroment.EventData}
          */
         this.assumeDefault = function () {
             defaultAction = true;
@@ -87,80 +87,81 @@ ProtoCore.factory(ProtoCore.Enviroment, 'EventData', function () {
         /* Constructor */
         this.data(initialData);
         
-        ProtoCore.mode(this, [
+        C.mode(this, [
             'assumed', 'stoped', 'assumeDefault', 'preventDefault',
             'continuePropagation', 'stopPropagation'
-        ], ProtoCore.MODE_LOCKED);
+        ], C.MODE_LOCKED);
     };
     
-    __constructor.prototype = new ProtoCore.Enviroment.EventData();
+    __constructor.prototype = new C.Enviroment.Object();
+    __constructor.prototype.constructor = new C.Enviroment.EventData();
     
     return __constructor;
-});
+}, C.MODE_LOCKED);
 
 ///**
-// * @namespace ProtoCore.Enviroment;
+// * @namespace C.Enviroment;
 // * 
 // * @class Event;
 // * 
 // * @constructor
 // * 
-// * @uses ProtoCore.Enviroment.Object;
+// * @uses C.Enviroment.Object;
 // * 
 // * @param {type} _initialData
 // * 
-// * @returns {ProtoCore.Enviroment.EventData}
+// * @returns {C.Enviroment.EventData}
 // */
-//ProtoCore.Enviroment.EventData = function (_initialData) {
+//C.Enviroment.EventData = function (_initialData) {
 //    /* Variables */
 //    var _result = null,
 //        _break = false,
 //        _default = true;
 //
 //    /* Inheritance */
-//    var parent = new ProtoCore.Enviroment.Object();
-//    ProtoCore.extend(this, parent);
+//    var parent = new C.Enviroment.Object();
+//    C.extend(this, parent);
 //    
 //    /* Implementation */
 //    /**
 //     * Stops event propagation
-//     * @returns {ProtoCore.Enviroment.EventData}
+//     * @returns {C.Enviroment.EventData}
 //     */
 //    this.stopPropagation = function () {
 //        _break = true;
 //        return this;
 //    };
-//    ProtoCore.mode(this, 'stopPropagation', ProtoCore.MODE_LOCKED);
+//    C.mode(this, 'stopPropagation', C.MODE_LOCKED);
 //
 //    /**
 //     * Continues event propagation
-//     * @returns {ProtoCore.Enviroment.EventData}
+//     * @returns {C.Enviroment.EventData}
 //     */
 //    this.continuePropagation = function () {
 //        _break = false;
 //        return this;
 //    };
-//    ProtoCore.mode(this, 'continuePropagation', ProtoCore.MODE_LOCKED);
+//    C.mode(this, 'continuePropagation', C.MODE_LOCKED);
 //
 //    /**
 //     * Prevents default action
-//     * @returns {ProtoCore.Enviroment.EventData}
+//     * @returns {C.Enviroment.EventData}
 //     */
 //    this.preventDefault = function () {
 //        _default = false;
 //        return this;
 //    };
-//    ProtoCore.mode(this, 'preventDefault', ProtoCore.MODE_LOCKED);
+//    C.mode(this, 'preventDefault', C.MODE_LOCKED);
 //
 //    /**
 //     * Assumes the default action
-//     * @returns {ProtoCore.Enviroment.EventData}
+//     * @returns {C.Enviroment.EventData}
 //     */
 //    this.assumeDefault = function () {
 //        _default = true;
 //        return this;
 //    };
-//    ProtoCore.mode(this, 'assumeDefault', ProtoCore.MODE_LOCKED);
+//    C.mode(this, 'assumeDefault', C.MODE_LOCKED);
 //
 //    /**
 //     * Is event propagation stopped
@@ -169,7 +170,7 @@ ProtoCore.factory(ProtoCore.Enviroment, 'EventData', function () {
 //    this.stoped = function () {
 //        return _break;
 //    };
-//    ProtoCore.mode(this, 'stoped', ProtoCore.MODE_LOCKED);
+//    C.mode(this, 'stoped', C.MODE_LOCKED);
 //
 //    /**
 //     * Is event assuming the default action
@@ -178,12 +179,12 @@ ProtoCore.factory(ProtoCore.Enviroment, 'EventData', function () {
 //    this.assumed = function () {
 //        return _default;
 //    };
-//    ProtoCore.mode(this, 'assumed', ProtoCore.MODE_LOCKED);
+//    C.mode(this, 'assumed', C.MODE_LOCKED);
 //
 //    /* Constructor */
 //    this.data(_initialData);
 //};
-//ProtoCore.Enviroment.EventData.prototype = new ProtoCore.Enviroment.Object();
-//ProtoCore.Enviroment.EventData.prototype.constructor = ProtoCore.Enviroment.EventData;
-//ProtoCore.register('ProtoCore.Enviroment.EventData', ProtoCore.Enviroment.EventData);
-//ProtoCore.mode(ProtoCore.Enviroment, 'EventData', ProtoCore.MODE_LOCKED);
+//C.Enviroment.EventData.prototype = new C.Enviroment.Object();
+//C.Enviroment.EventData.prototype.constructor = C.Enviroment.EventData;
+//C.register('C.Enviroment.EventData', C.Enviroment.EventData);
+//C.mode(C.Enviroment, 'EventData', C.MODE_LOCKED);
