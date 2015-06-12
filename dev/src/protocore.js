@@ -14,86 +14,6 @@ function CJS() {
     this.MODE_HIDDEN = 4;
     this.MODE_PROPERTY = 8;
 
-    /* OBJECT */
-    
-    this.guid = function (_length) {
-    };
-
-    this.implement = function (instance, method, definition, mode) {
-    };
-
-    this.factory = function (instance, method, strategy, mode) {
-    };
-
-    this.extend = function (instance, parent) {
-    };
-
-    this.mode = function (obj, _property, _mode) {
-    };
-
-    this.traverse = function (obj, callback) {
-    };
-
-    this.instantiate = function (cls) {
-    };
-
-    this.serialize = function (obj) {
-    };
-
-    this.unserialize = function (serialized) {
-    };
-
-    this.clone = function (obj) {
-    };
-
-    this.cast = function (obj, castTo) {
-    };
-
-    /* ENVIROMENT */
-
-    this.isCallable = function (callable) {
-    };
-
-    this.isFlaged = function (val, flag) {
-    };
-
-    this.isFunction = function (functionToCheck) {
-    };
-
-    this.isObject = function (variableToCheck) {
-    };
-
-    this.isArray = function (variableToCheck) {
-    };
-
-    this.isDefined = function (variableToCheck) {
-    };
-
-    this.isString = function (variableToCheck) {
-    };
-
-    this.descriptor = function (obj, property) {
-    };
-
-    /* CODE */
-    this.fork = function (callable, timeout) {
-    };
-
-    this.join = function (callables, events) {
-    };
-
-    this.queue = function (callables, inputParams, onDone) {
-    };
-
-    /* SCRIPT */
-    this.load = function (file, onDone, onError) {
-    };
-
-    this.require = function (includeScript, requireStrategy, callbackDone, callbackError) {
-    };
-
-    this.helper = function () {
-    };
 }
 
 CJS.prototype = {
@@ -182,10 +102,10 @@ CJS.prototype = {
 
                 this.traverse(_property, function (propertyIndexOrName, propertyModeOrName) {
                     if (propertyIsArray) {
-                        self.mode(obj, _mode, propertyModeOrName);
+                        C.mode(obj, _mode, propertyModeOrName);
                     }
                     else if (propertyIsObject) {
-                        self.mode(obj, propertyIndexOrName, propertyModeOrName);
+                        C.mode(obj, propertyModeOrName, propertyIndexOrName);
                     }
                 });
             }
@@ -308,6 +228,10 @@ CJS.prototype = {
             return _ret;
         }
     },
+    sleep : function ( sleepDuration ) {
+        var now = new Date().getTime();
+        while(new Date().getTime() < now + sleepDuration){ /* do nothing */ } 
+    },
     fork: function (callable, timeout) {
         var asyncArgs = Array.prototype.slice.call(arguments, 1);
         var asyncWait = 0;
@@ -315,8 +239,16 @@ CJS.prototype = {
         var asyncCallable = callable;
 
         if (this.isArray(callable)) {
-            asyncContext = callable[1];
-            asyncCallable = callable[0];
+            if (C.isArray(callable[0]) || C.isFunction(callable[0])) {
+                C.traverse(callable, function (cIndex, cValue) {
+                    C.fork(cValue, timeout);
+                });
+                return;
+            }
+            else {
+                asyncContext = callable[1];
+                asyncCallable = callable[0];
+            }
         }
 
         if (this.isDefined(timeout)) {
@@ -332,9 +264,10 @@ CJS.prototype = {
             }
 
             _executed = true;
-
-            asyncCallable.apply(asyncContext, asyncArgs);
+            
+            asyncCallable.call(asyncContext);
             clearTimeout(tm);
+            
         }, asyncWait);
     },
     join: function (callables, events) {

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ProtoCore Test</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="../dist/c.js"></script>
+        <script type="text/javascript" src="../dist/c.enviroment.js"></script>
+        <script type="text/javascript" src="../node_modules/zepto-full/zepto.js"></script>
+        <script type="text/javascript" language="javascript">
+            $(document).ready(function () {
+                var timer1 = 1, 
+                    timer2 = 2,
+                    timer3 = 3;
+
+                var fork1 = function () {
+                    $("#fork1Message").html(timer1);
+                    timer1++;
+                    C.sleep(1);
+                };
+
+                var fork2 = function () {
+                    $("#fork2Message").html(timer2);
+                    timer2++;
+                    C.sleep(1);
+                };
+
+                var fork3 = function () {
+                    $("#fork3Message").html(timer3);
+                    timer3++;
+                    C.sleep(1);
+                };
+                console.log(C);
+                C.fork(fork1);
+            });
+            
+        </script>
+    </head>
+    <body>
+        <div id="fork1Message"></div>
+        <div id="fork2Message"></div>
+        <div id="fork3Message"></div>
+    </body>
+</html>

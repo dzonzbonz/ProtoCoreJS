@@ -3,6 +3,9 @@
 var factory = function (C) {
     C.Enviroment = {};
 //::OBJECT_JS:://
+//::EVENT_DATA_JS:://
+//::EVENT_JS:://
+//::LOADER_JS:://
     return C.Enviroment;
 };
 

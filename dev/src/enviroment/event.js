@@ -1,7 +1,9 @@
 /**
  * @constructor
- * @param {Object} _callContext
+ * @extends C.Enviroment.Object
+ * @param {Function} actionAfter
  * @param {Function} actionBefore
+ * @param {Object} callContext
  * 
  * @returns {C.Enviroment.Event}
  */
@@ -123,7 +125,7 @@ C.factory(C.Enviroment, 'Event', function () {
         ], C.MODE_LOCKED);
     };
     
-    __constructor.prototype = new C.Enviroment.Object();
+    __constructor.prototype = new C.Enviroment.Event();
     __constructor.prototype.constructor = C.Enviroment.Event;
     
     return __constructor;

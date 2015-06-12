@@ -84,6 +84,7 @@ C.factory(C.Enviroment, 'Object', function () {
     };
     
     __constructor.prototype = new C.Enviroment.Object();
+    __constructor.prototype.constructor = C.Enviroment.Object;
     
     return __constructor;
 }, C.MODE_LOCKED);

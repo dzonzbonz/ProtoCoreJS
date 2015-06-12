@@ -26,7 +26,8 @@
         
     },
     "devDependencies" : {
-        "uglify-js" : "~1.2.3"
+        "uglify-js" : "~1.2.3",
+        "zepto-full" : "~1.1.2"
     },
     "scripts" : {
         "pretest" : "node build"

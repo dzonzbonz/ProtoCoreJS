@@ -21,7 +21,8 @@ var buildConfig = {
         'deploy': {
             OBJECT_JS          : '/object.js',
             EVENT_DATA_JS      : '/event-data.js',
-            EVENT_JS           : '/event.js'
+            EVENT_JS           : '/event.js',
+            LOADER_JS          : '/loader.js',
         }
     }
 };
