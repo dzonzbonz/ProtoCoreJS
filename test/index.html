@@ -32,6 +32,26 @@
                 var extendInstance = new CChildClass();
                 extendInstance.baseMethod();
 
+                var CObject = new C.Enviroment.Object();
+                CObject.data({
+                    'value': 1
+                });
+                
+                $('#objectDataSet').html(JSON.stringify({
+                    'value': 1
+                }));
+                
+                $('#objectDataGet').html(JSON.stringify(CObject.data()));
+                
+                var CEvent = new C.Enviroment.EventData({
+                    'value': 1
+                });
+                
+                $('#eventDataSet').html(JSON.stringify({
+                    'value': 1
+                }));
+                
+                $('#eventDataGet').html(JSON.stringify(CEvent.data()));
 //                for (var i = 1; i < 200; i++) {
 //                    Multithread.process(
 //                        function Recurse(limit) {
@@ -52,7 +72,7 @@
                     (function () {
                         var ev = new C.Enviroment.Event();
                         
-                        var t = new C.Enviroment.Thread(
+                        var t = new C.Enviroment.Task(
                             function Recurse(e) {
                                 for (var j = 1; j < 1000000; j++) {
                                     if (j % 1000 == 0) {
@@ -65,17 +85,21 @@
                                 }
 
                                 return e;
-                            },
-                            function (r) {
-//                                console.log(r);
-                            },
-                            function(e) {
-                                if (e.message === 'draw') {
-                                    $("#multiThreading" + e.data.task).html(e.data.value / 100);
-                                }
                             }
                         );
-                
+                        
+                        t.onMessage.subscribe(
+                        /**
+                         * 
+                         * @param {C.Enviroment.EventData} e
+                         * @returns {undefined}
+                         */
+                        function (e) {
+                            if (e.data('message') === 'draw') {
+                                $("#multiTasking" + e.data('data').task).html(e.data('data').value / 100);
+                            }
+                        }, t);
+                        
                         t.run({
                             'task': i
                         });
@@ -87,16 +111,22 @@
         </script>
     </head>
     <body>
+        <h3>Object Data</h3>
+        <div id="objectDataSet"></div>
+        <div id="objectDataGet"></div>
+        <h3>Event Data</h3>
+        <div id="eventDataSet"></div>
+        <div id="eventDataGet"></div>
         <h3>Multi-threading</h3>
-        <div id="multiThreading1"></div>
-        <div id="multiThreading2"></div>
-        <div id="multiThreading3"></div>
-        <div id="multiThreading4"></div>
-        <div id="multiThreading5"></div>
-        <div id="multiThreading6"></div>
-        <div id="multiThreading7"></div>
-        <div id="multiThreading8"></div>
-        <div id="multiThreading9"></div>
+        <div id="multiTasking1"></div>
+        <div id="multiTasking2"></div>
+        <div id="multiTasking3"></div>
+        <div id="multiTasking4"></div>
+        <div id="multiTasking5"></div>
+        <div id="multiTasking6"></div>
+        <div id="multiTasking7"></div>
+        <div id="multiTasking8"></div>
+        <div id="multiTasking9"></div>
         <button type="button" onclick="test2();">Test</button>
         <h3>Extend</h3>
         <div id="extend1Message"></div>

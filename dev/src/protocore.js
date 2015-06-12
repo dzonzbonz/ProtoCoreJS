@@ -14,86 +14,6 @@ function CJS() {
     this.MODE_HIDDEN = 4;
     this.MODE_PROPERTY = 8;
 
-//    /* OBJECT */
-//    
-//    this.guid = function (_length) {
-//    };
-//
-//    this.implement = function (instance, method, definition, mode) {
-//    };
-//
-//    this.factory = function (instance, method, strategy, mode) {
-//    };
-//
-//    this.extend = function (instance, parent) {
-//    };
-//
-//    this.mode = function (obj, _property, _mode) {
-//    };
-//
-//    this.traverse = function (obj, callback) {
-//    };
-//
-//    this.instantiate = function (cls) {
-//    };
-//
-//    this.serialize = function (obj) {
-//    };
-//
-//    this.unserialize = function (serialized) {
-//    };
-//
-//    this.clone = function (obj) {
-//    };
-//
-//    this.cast = function (obj, castTo) {
-//    };
-//
-//    /* ENVIROMENT */
-//
-//    this.isCallable = function (callable) {
-//    };
-//
-//    this.isFlaged = function (val, flag) {
-//    };
-//
-//    this.isFunction = function (functionToCheck) {
-//    };
-//
-//    this.isObject = function (variableToCheck) {
-//    };
-//
-//    this.isArray = function (variableToCheck) {
-//    };
-//
-//    this.isDefined = function (variableToCheck) {
-//    };
-//
-//    this.isString = function (variableToCheck) {
-//    };
-//
-//    this.descriptor = function (obj, property) {
-//    };
-//
-//    /* CODE */
-//    this.fork = function (callable, timeout) {
-//    };
-//
-//    this.join = function (callables, events) {
-//    };
-//
-//    this.queue = function (callables, inputParams, onDone) {
-//    };
-//
-//    /* SCRIPT */
-//    this.load = function (file, onDone, onError) {
-//    };
-//
-//    this.require = function (includeScript, requireStrategy, callbackDone, callbackError) {
-//    };
-//
-//    this.helper = function () {
-//    };
 }
 
 CJS.prototype = {
@@ -246,7 +166,7 @@ CJS.prototype = {
      * @param {Function} how
      */
     factory: function (instance, factory, method, mode) {
-        var howToImplement = null;
+        var howToImplement = factory;
         var self = this;
 
         if (this.isString(factory)) {
@@ -273,7 +193,7 @@ CJS.prototype = {
             var factoryImplementation = factory.call(instance, method);
 
             if (this.isString(method) && this.isFunction(factory)) {
-                // implement factory result as method
+            // implement factory result as method
                 this.implement(instance, method, factoryImplementation, mode);
             }
         }
@@ -490,45 +410,45 @@ C.factory(C, 'extend', function (method) {
     var _wrap = function (objectInstance, parentInstance) {
         if (!objectInstance.hasProperty) {
             C.implement(objectInstance,
-                    'hasProperty',
-                    function (property) {
-                        var _ret = false;
-                        if (this.hasOwnProperty(property)) { // this level property
-                            _ret = true;
-                        }
-                        else if (parentInstance && parentInstance.hasProperty) { // parent level property protocor wrapper
-                            _ret = parentInstance.hasProperty(property);
-                        }
-                        else if (parentInstance) { // parent level property dom wrapper
-                            _ret = parentInstance.hasOwnProperty(property);
-                        }
+                'hasProperty',
+                function (property) {
+                    var _ret = false;
+                    if (this.hasOwnProperty(property)) { // this level property
+                        _ret = true;
+                    }
+                    else if (parentInstance && parentInstance.hasProperty) { // parent level property protocor wrapper
+                        _ret = parentInstance.hasProperty(property);
+                    }
+                    else if (parentInstance) { // parent level property dom wrapper
+                        _ret = parentInstance.hasOwnProperty(property);
+                    }
 
-                        return _ret;
-                    },
-                    C.MODE_LOCKED & C.MODE_HIDDEN
-                    );
+                    return _ret;
+                },
+                C.MODE_LOCKED & C.MODE_HIDDEN
+            );
         }
 
         if (!objectInstance.getPropertyDescriptor) {
             C.implement(objectInstance,
-                    'getPropertyDescriptor',
-                    function (property) {
-                        var _ret = false;
+                'getPropertyDescriptor',
+                function (property) {
+                    var _ret = false;
 
-                        if (this.hasOwnProperty(property)) {
-                            _ret = Object.getOwnPropertyDescriptor(this, property);
-                        }
-                        else if (parentInstance && parentInstance.hasProperty && parentInstance.hasProperty(property)) {
-                            _ret = parentInstance.getPropertyDescriptor(property);
-                        }
-                        else if (parentInstance && parentInstance.hasOwnProperty(property)) {
-                            _ret = Object.getOwnPropertyDescriptor(parentInstance, property);
-                        }
+                    if (this.hasOwnProperty(property)) {
+                        _ret = Object.getOwnPropertyDescriptor(this, property);
+                    }
+                    else if (parentInstance && parentInstance.hasProperty && parentInstance.hasProperty(property)) {
+                        _ret = parentInstance.getPropertyDescriptor(property);
+                    }
+                    else if (parentInstance && parentInstance.hasOwnProperty(property)) {
+                        _ret = Object.getOwnPropertyDescriptor(parentInstance, property);
+                    }
 
-                        return _ret;
-                    },
-                    C.MODE_LOCKED & C.MODE_HIDDEN
-                    );
+                    return _ret;
+                },
+                C.MODE_LOCKED & C.MODE_HIDDEN
+            );
         }
     };
 
@@ -541,28 +461,26 @@ C.factory(C, 'extend', function (method) {
         _wrap(objectInstance, parentInstance);
 
         C.traverse(parentInstance, function (parentMethod, methodDefinition) {
-            for (var parentMethod in parentInstance) {
-                if (parentMethod === 'constructor' || parentMethod === '__instanceof__') {
-                    continue;
-                }
-
-                var methodMode = 0;
-                var desc = C.descriptor(parentInstance, parentMethod);
-
-                if (!desc.writable) {
-                    methodMode = methodMode | C.MODE_READONLY;
-                }
-
-                if (!desc.configurable) {
-                    methodMode = methodMode | C.MODE_LOCKED;
-                }
-
-                if (!desc.enumerable) {
-                    methodMode = methodMode | C.MODE_HIDDEN;
-                }
-
-                instance.implement(objectInstance, parentMethod, methodDefinition, methodMode);
+            if (parentMethod === 'constructor' || parentMethod === '__instanceof__') {
+                return;
             }
+
+            var methodMode = 0;
+            var desc = C.descriptor(parentInstance, parentMethod);
+
+            if (!desc.writable) {
+                methodMode = methodMode | C.MODE_READONLY;
+            }
+
+            if (!desc.configurable) {
+                methodMode = methodMode | C.MODE_LOCKED;
+            }
+
+            if (!desc.enumerable) {
+                methodMode = methodMode | C.MODE_HIDDEN;
+            }
+
+            instance.implement(objectInstance, parentMethod, methodDefinition, methodMode);
         });
 
     };

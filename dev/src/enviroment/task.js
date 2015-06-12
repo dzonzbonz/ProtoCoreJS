@@ -5,16 +5,26 @@
  * @param {Function} actionBefore
  * @param {Object} callContext
  * 
- * @returns {C.Enviroment.Thread}
+ * @returns {C.Enviroment.Task}
  */
-C.Enviroment.Thread = function (callable) {
-
+C.Enviroment.Task = function (callable) {
+    
+    this.onMessage = new C.Enviroment.Event();
+    this.onStop = new C.Enviroment.Event();
+    this.onRun = new C.Enviroment.Event();
+        
     this.run = function () {
+    };
+
+    this.pipe = function () {
+    };
+
+    this.stop = function () {
     };
 
 };
 
-C.factory(C.Enviroment, 'Thread', function () {
+C.factory(C.Enviroment, 'Task', function () {
 
     var thread = window.Worker;
     var URL = window.URL || window.webkitURL;
@@ -152,7 +162,7 @@ C.factory(C.Enviroment, 'Thread', function () {
     /**
      * @constructor
      * @extends C.Enviroment.Object
-     * @returns {C.Enviroment.Thread}
+     * @returns {C.Enviroment.Task}
      */
     var __constructor = function (callable, callback, pipe) {
         var running = false;
@@ -163,24 +173,54 @@ C.factory(C.Enviroment, 'Thread', function () {
         };
         var worker = null;
         
+        this.onMessage = new C.Enviroment.Event();
+        this.onStop = new C.Enviroment.Event();
+        this.onRun = new C.Enviroment.Event();
+        
         this.run = function () {
             if (!running) {
                 running = true;
-                var self = this;
+//                var self = this;
                 var processResource = prepareResource(callable);
-
-                worker = startProcess(processResource, callback, pipe, [].slice.call(arguments));
+                
+                var eventData = new C.Enviroment.EventData();
+                
+                worker = startProcess(
+                    processResource, 
+                    function (e) {
+                        eventData.data(e);
+                        eventData.assumeDefault();
+                        eventData.continuePropagation();
+                        self.onStop.notify(eventData);
+                    }, 
+                    function (e) {
+                        eventData.data(e);
+                        eventData.assumeDefault();
+                        eventData.continuePropagation();
+                        self.onMessage.notify(eventData);
+                    }, 
+                    [].slice.call(arguments)
+                );
+//                worker = startProcess(
+//                    processResource, 
+//                    callback, 
+//                    pipe, 
+//                    [].slice.call(arguments)
+//                );
+        
+                this.onRun.notify(new C.Enviroment.EventData());
             }
         };
 
-        this.pipe = function (messageID, messageData) {
+        this.pipe = function () {
             if (running) {
-                var buffer = encodeArguments({
-                    'message': messageID,
-                    'data': messageData
-                });
+//                var buffer = encodeArguments({
+//                    'message': messageID,
+//                    'data': messageData
+//                });
                 
-                worker.postMessage(buffer, [buffer]);
+                worker.postMessage([].slice.call(arguments));
+//                worker.postMessage(buffer, [buffer]);
             }
         };
 
@@ -191,12 +231,14 @@ C.factory(C.Enviroment, 'Thread', function () {
                 running = false;
             }
         };
-
-        C.mode(this, [ 'run', 'pipe' ], C.MODE_LOCKED);
+        
+        var self = this;
+        
+        C.mode(this, [ 'run', 'pipe', 'onMessage', 'onStop', 'onRun' ], C.MODE_LOCKED);
     };
     
-    __constructor.prototype = new C.Enviroment.Thread();
-    __constructor.prototype.constructor = C.Enviroment.Thread;
+    __constructor.prototype = new C.Enviroment.Task();
+    __constructor.prototype.constructor = C.Enviroment.Task;
     
     return __constructor;
 });

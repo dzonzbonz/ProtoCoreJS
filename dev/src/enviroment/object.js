@@ -40,19 +40,25 @@ C.factory(C.Enviroment, 'Object', function () {
                     objectData = key;
                 } 
                 else {
-                // GETTER
-                    if (!C.isDefined(objectData[key])) {
-                        return null;
-                    }
-                    return objectData[key];
+                // SETTER
+                    objectData[key] = value;
                 }
             } 
             else {
-            // SETTER
-                if (null === key) {
-                    objectData = {};
+                if (!C.isDefined(key)) {
+                // GETTER
+                    return objectData;
                 } else {
-                    objectData[key] = value;
+                // SETTER
+                    if (C.isArray(key)
+                        || C.isObject(key)) {
+                    // SETTER
+                        objectData = key;
+                    }
+                    else if (!C.isDefined(objectData[key])) {
+                        return null;
+                    }
+                    return objectData[key];
                 }
             }
             return this;
