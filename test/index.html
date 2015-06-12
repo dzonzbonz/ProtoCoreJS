@@ -7,36 +7,101 @@
         <script type="text/javascript" src="../dist/c.js"></script>
         <script type="text/javascript" src="../dist/c.enviroment.js"></script>
         <script type="text/javascript" src="../node_modules/zepto-full/zepto.js"></script>
+        <script type="text/javascript" src="../dist/thread.js"></script>
         <script type="text/javascript" language="javascript">
             $(document).ready(function () {
-                var timer1 = 1, 
-                    timer2 = 2,
-                    timer3 = 3;
+                var CParentClass = function () {
 
-                var fork1 = function () {
-                    $("#fork1Message").html(timer1);
-                    timer1++;
-                    C.sleep(1);
+                    this.baseMethod = function () {
+                        $("#extend1Message").html('Base method');
+                    };
+
                 };
 
-                var fork2 = function () {
-                    $("#fork2Message").html(timer2);
-                    timer2++;
-                    C.sleep(1);
+                var CChildClass = function () {
+
+                    var parent = new CParentClass();
+                    C.extend(this, parent);
+
+                    this.baseMethod = function () {
+                        parent.baseMethod();
+                        $("#extend2Message").html('Overrided method');
+                    };
                 };
 
-                var fork3 = function () {
-                    $("#fork3Message").html(timer3);
-                    timer3++;
-                    C.sleep(1);
-                };
-                console.log(C);
-                C.fork(fork1);
+                var extendInstance = new CChildClass();
+                extendInstance.baseMethod();
+
+//                for (var i = 1; i < 200; i++) {
+//                    Multithread.process(
+//                        function Recurse(limit) {
+//                            var x = 0;
+//                            for (j = 1; j < 1000000; j++) {
+//                                x++;
+//                            }
+//                            
+//                            return x;
+//                        },
+//                        function (r) {
+//                            console.log(r);
+//                        }
+//                    )(100);
+//                }
+                
+                for (var i = 1; i < 10; i++) {
+                    (function () {
+                        var ev = new C.Enviroment.Event();
+                        
+                        var t = new C.Enviroment.Thread(
+                            function Recurse(e) {
+                                for (var j = 1; j < 1000000; j++) {
+                                    if (j % 1000 == 0) {
+                                        this.pipe('draw', {
+                                            'task': e.task,
+                                            'value': j
+                                        });
+                                        this.sleep(5);
+                                    }
+                                }
+
+                                return e;
+                            },
+                            function (r) {
+//                                console.log(r);
+                            },
+                            function(e) {
+                                if (e.message === 'draw') {
+                                    $("#multiThreading" + e.data.task).html(e.data.value / 100);
+                                }
+                            }
+                        );
+                
+                        t.run({
+                            'task': i
+                        });
+                    })();
+                }
+
             });
-            
+
         </script>
     </head>
     <body>
+        <h3>Multi-threading</h3>
+        <div id="multiThreading1"></div>
+        <div id="multiThreading2"></div>
+        <div id="multiThreading3"></div>
+        <div id="multiThreading4"></div>
+        <div id="multiThreading5"></div>
+        <div id="multiThreading6"></div>
+        <div id="multiThreading7"></div>
+        <div id="multiThreading8"></div>
+        <div id="multiThreading9"></div>
+        <button type="button" onclick="test2();">Test</button>
+        <h3>Extend</h3>
+        <div id="extend1Message"></div>
+        <div id="extend2Message"></div>
+        <h3>Fork</h3>
         <div id="fork1Message"></div>
         <div id="fork2Message"></div>
         <div id="fork3Message"></div>

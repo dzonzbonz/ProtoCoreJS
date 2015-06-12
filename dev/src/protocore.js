@@ -14,6 +14,86 @@ function CJS() {
     this.MODE_HIDDEN = 4;
     this.MODE_PROPERTY = 8;
 
+//    /* OBJECT */
+//    
+//    this.guid = function (_length) {
+//    };
+//
+//    this.implement = function (instance, method, definition, mode) {
+//    };
+//
+//    this.factory = function (instance, method, strategy, mode) {
+//    };
+//
+//    this.extend = function (instance, parent) {
+//    };
+//
+//    this.mode = function (obj, _property, _mode) {
+//    };
+//
+//    this.traverse = function (obj, callback) {
+//    };
+//
+//    this.instantiate = function (cls) {
+//    };
+//
+//    this.serialize = function (obj) {
+//    };
+//
+//    this.unserialize = function (serialized) {
+//    };
+//
+//    this.clone = function (obj) {
+//    };
+//
+//    this.cast = function (obj, castTo) {
+//    };
+//
+//    /* ENVIROMENT */
+//
+//    this.isCallable = function (callable) {
+//    };
+//
+//    this.isFlaged = function (val, flag) {
+//    };
+//
+//    this.isFunction = function (functionToCheck) {
+//    };
+//
+//    this.isObject = function (variableToCheck) {
+//    };
+//
+//    this.isArray = function (variableToCheck) {
+//    };
+//
+//    this.isDefined = function (variableToCheck) {
+//    };
+//
+//    this.isString = function (variableToCheck) {
+//    };
+//
+//    this.descriptor = function (obj, property) {
+//    };
+//
+//    /* CODE */
+//    this.fork = function (callable, timeout) {
+//    };
+//
+//    this.join = function (callables, events) {
+//    };
+//
+//    this.queue = function (callables, inputParams, onDone) {
+//    };
+//
+//    /* SCRIPT */
+//    this.load = function (file, onDone, onError) {
+//    };
+//
+//    this.require = function (includeScript, requireStrategy, callbackDone, callbackError) {
+//    };
+//
+//    this.helper = function () {
+//    };
 }
 
 CJS.prototype = {
@@ -39,7 +119,7 @@ CJS.prototype = {
         return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
     },
     isCallable: function (callable) {
-        
+
         if (!this.isFunction(callable)) {
             return false;
         } else if (this.isArray(callable)) {
@@ -49,7 +129,7 @@ CJS.prototype = {
                 return false;
             }
         }
-        
+
         return true;
     },
     isObject: function (variableToCheck) {
@@ -114,11 +194,25 @@ CJS.prototype = {
                 var _enumerable = !this.flaged(_mode, this.MODE_HIDDEN);
                 var _configurable = !this.flaged(_mode, this.MODE_LOCKED);
 
-                Object.defineProperty(obj, _property, {
-                    writable: _writeable,
-                    enumerable: _enumerable,
-                    configurable: _configurable
-                });
+                var propertyDescriptor = this.descriptor(obj, _property);
+                var protoDescriptor = null;
+                if (this.isDefined(obj['__proto__'])) {
+                    protoDescriptor = this.descriptor(obj.__proto__, _property);
+                }
+
+                if (propertyDescriptor && this.isDefined(propertyDescriptor['value'])) {
+                    Object.defineProperty(obj, _property, {
+                        writable: _writeable,
+                        enumerable: _enumerable,
+                        configurable: _configurable
+                    });
+                } else if (protoDescriptor && this.isDefined(protoDescriptor['value'])) {
+                    Object.defineProperty(obj['__proto__'], _property, {
+                        writable: _writeable,
+                        enumerable: _enumerable,
+                        configurable: _configurable
+                    });
+                }
             }
         }
     },
@@ -204,7 +298,7 @@ CJS.prototype = {
                 var callArgs = Array.prototype.slice.call(arguments, 1);
             }
         }
-        
+
         return ret;
     },
     /**
@@ -228,12 +322,12 @@ CJS.prototype = {
             return _ret;
         }
     },
-    sleep : function ( sleepDuration ) {
+    sleep: function (sleepDuration) {
         var now = new Date().getTime();
-        while(new Date().getTime() < now + sleepDuration){ /* do nothing */ } 
+        while (new Date().getTime() < now + sleepDuration) { /* do nothing */
+        }
     },
-    fork: function (callable, timeout) {
-        var asyncArgs = Array.prototype.slice.call(arguments, 1);
+    fork: function (callable, timeout, limit) {
         var asyncWait = 0;
         var asyncContext = window;
         var asyncCallable = callable;
@@ -252,22 +346,21 @@ CJS.prototype = {
         }
 
         if (this.isDefined(timeout)) {
-            asyncArgs = Array.prototype.slice.call(arguments, 2);
             asyncWait = timeout;
         }
 
-        var _executed = false;
+        var busy = false;
 
-        var tm = setTimeout(function () {
-            if (_executed) {
-                return;
+        var process = setInterval(function () {
+            if (!busy) {
+                busy = true;
+
+                asyncCallable.call(asyncContext);
+                
+                clearInterval(process);
+                
+                busy = false;
             }
-
-            _executed = true;
-            
-            asyncCallable.call(asyncContext);
-            clearTimeout(tm);
-            
         }, asyncWait);
     },
     join: function (callables, events) {
@@ -390,52 +483,52 @@ CJS.prototype = {
 
 C = new CJS();
 
-C.factory(this, 'extend', function (method) {
+C.factory(C, 'extend', function (method) {
     // helper function
     var instance = this;
-    
+
     var _wrap = function (objectInstance, parentInstance) {
         if (!objectInstance.hasProperty) {
             C.implement(objectInstance,
-                'hasProperty',
-                function (property) {
-                    var _ret = false;
-                    if (this.hasOwnProperty(property)) { // this level property
-                        _ret = true;
-                    }
-                    else if (parentInstance && parentInstance.hasProperty) { // parent level property protocor wrapper
-                        _ret = parentInstance.hasProperty(property);
-                    }
-                    else if (parentInstance) { // parent level property dom wrapper
-                        _ret = parentInstance.hasOwnProperty(property);
-                    }
+                    'hasProperty',
+                    function (property) {
+                        var _ret = false;
+                        if (this.hasOwnProperty(property)) { // this level property
+                            _ret = true;
+                        }
+                        else if (parentInstance && parentInstance.hasProperty) { // parent level property protocor wrapper
+                            _ret = parentInstance.hasProperty(property);
+                        }
+                        else if (parentInstance) { // parent level property dom wrapper
+                            _ret = parentInstance.hasOwnProperty(property);
+                        }
 
-                    return _ret;
-                }, 
-                C.MODE_LOCKED & C.MODE_HIDDEN
-            );
+                        return _ret;
+                    },
+                    C.MODE_LOCKED & C.MODE_HIDDEN
+                    );
         }
 
         if (!objectInstance.getPropertyDescriptor) {
-            C.implement(objectInstance, 
-                'getPropertyDescriptor', 
-                function (property) {
-                    var _ret = false;
+            C.implement(objectInstance,
+                    'getPropertyDescriptor',
+                    function (property) {
+                        var _ret = false;
 
-                    if (this.hasOwnProperty(property)) {
-                        _ret = Object.getOwnPropertyDescriptor(this, property);
-                    }
-                    else if (parentInstance && parentInstance.hasProperty && parentInstance.hasProperty(property)) {
-                        _ret = parentInstance.getPropertyDescriptor(property);
-                    }
-                    else if (parentInstance && parentInstance.hasOwnProperty(property)) {
-                        _ret = Object.getOwnPropertyDescriptor(parentInstance, property);
-                    }
+                        if (this.hasOwnProperty(property)) {
+                            _ret = Object.getOwnPropertyDescriptor(this, property);
+                        }
+                        else if (parentInstance && parentInstance.hasProperty && parentInstance.hasProperty(property)) {
+                            _ret = parentInstance.getPropertyDescriptor(property);
+                        }
+                        else if (parentInstance && parentInstance.hasOwnProperty(property)) {
+                            _ret = Object.getOwnPropertyDescriptor(parentInstance, property);
+                        }
 
-                    return _ret;
-                }, 
-                C.MODE_LOCKED & C.MODE_HIDDEN
-            );
+                        return _ret;
+                    },
+                    C.MODE_LOCKED & C.MODE_HIDDEN
+                    );
         }
     };
 
@@ -447,33 +540,36 @@ C.factory(this, 'extend', function (method) {
 
         _wrap(objectInstance, parentInstance);
 
-        for (var parentMethod in parentInstance) {
-            if (parentMethod === 'constructor' || parentMethod === '__instanceof__') {
-                continue;
+        C.traverse(parentInstance, function (parentMethod, methodDefinition) {
+            for (var parentMethod in parentInstance) {
+                if (parentMethod === 'constructor' || parentMethod === '__instanceof__') {
+                    continue;
+                }
+
+                var methodMode = 0;
+                var desc = C.descriptor(parentInstance, parentMethod);
+
+                if (!desc.writable) {
+                    methodMode = methodMode | C.MODE_READONLY;
+                }
+
+                if (!desc.configurable) {
+                    methodMode = methodMode | C.MODE_LOCKED;
+                }
+
+                if (!desc.enumerable) {
+                    methodMode = methodMode | C.MODE_HIDDEN;
+                }
+
+                instance.implement(objectInstance, parentMethod, methodDefinition, methodMode);
             }
+        });
 
-            var methodMode = 0;
-            var desc = C.descriptor(parentInstance, parentMethod);
-
-            if (!desc.writable) {
-                methodMode = methodMode | C.MODE_READONLY;
-            }
-
-            if (!desc.configurable) {
-                methodMode = methodMode | C.MODE_LOCKED;
-            }
-
-            if (!desc.enumerable) {
-                methodMode = methodMode | C.MODE_HIDDEN;
-            }
-
-            instance.implement(objectInstance, parentMethod, parentInstance[parentMethod], methodMode);
-        }
     };
 });
 
 C.mode(C, [
-    "MODE_HIDDEN", "MODE_LOCKED", "MODE_PROPERTY", "MODE_READONLY",
+    "VERSION", "MODE_HIDDEN", "MODE_LOCKED", "MODE_PROPERTY", "MODE_READONLY",
     'implement', 'factory', 'mode', 'extend', 'include', 'serialize', 'unserialize',
     'clone', 'cast', 'traverse', 'instantiate', 'descriptor',
     'fork', 'join', 'queue',

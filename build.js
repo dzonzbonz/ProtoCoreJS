@@ -23,6 +23,7 @@ var buildConfig = {
             EVENT_DATA_JS      : '/event-data.js',
             EVENT_JS           : '/event.js',
             LOADER_JS          : '/loader.js',
+            THREAD_JS          : '/thread.js'
         }
     }
 };
