@@ -68,11 +68,6 @@ C.factory(C.Enviroment, 'Task', function () {
         
     // send message to the initiator
         /**/name/**/.pipe = function (messageID, messageData) {
-//            var pipeData = encodeArguments({
-//                'message': messageID,
-//                'data': messageData
-//            });
-//            self.postMessage(pipeData, [pipeData]);
             self.postMessage({
                 'message': messageID,
                 'data': messageData
@@ -85,21 +80,14 @@ C.factory(C.Enviroment, 'Task', function () {
         };
         
         self.addEventListener('message', function (e) {
-//            var inputArgs = decodeArguments(e.data);
             var inputArgs = e.data;
             
             var value = (/**/name/**/).apply(/**/name/**/, inputArgs);
-            
-//            var buffer = encodeArguments({
-//                'message': false,
-//                'data': value
-//            });
             
             self.postMessage({
                 'message': false,
                 'data': value
             });
-//            self.postMessage(buffer, [buffer]);
             self.close();
         });
     };
@@ -137,10 +125,8 @@ C.factory(C.Enviroment, 'Task', function () {
         var worker = new Worker(resource);
         
         var self = this;
-//        var buffer = encodeArguments(params);
         
         var listener = function (e) {
-//            var piped = decodeArguments(e.data);
             var piped = e.data;
             
             if (piped.message) {
@@ -153,7 +139,6 @@ C.factory(C.Enviroment, 'Task', function () {
         
     // listen to the messages comming from worker
         worker.addEventListener('message', listener);
-//        worker.postMessage(buffer, [buffer]);
         worker.postMessage(params);
         
         return worker;
@@ -201,12 +186,6 @@ C.factory(C.Enviroment, 'Task', function () {
                     }, 
                     [].slice.call(arguments)
                 );
-//                worker = startProcess(
-//                    processResource, 
-//                    callback, 
-//                    pipe, 
-//                    [].slice.call(arguments)
-//                );
         
                 this.onRun.notify(new C.Enviroment.EventData());
             }
@@ -214,20 +193,13 @@ C.factory(C.Enviroment, 'Task', function () {
 
         this.pipe = function () {
             if (running) {
-//                var buffer = encodeArguments({
-//                    'message': messageID,
-//                    'data': messageData
-//                });
-                
                 worker.postMessage([].slice.call(arguments));
-//                worker.postMessage(buffer, [buffer]);
             }
         };
 
         this.stop = function () {
             if (running) {                
                 worker.terminate();
-                
                 running = false;
             }
         };
