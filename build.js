@@ -25,6 +25,19 @@ var buildConfig = {
             LOADER_JS          : '/loader.js',
             TASK_JS            : '/task.js'
         }
+    },
+    'http': {
+        'src': 'dev/src/http',
+        'dist': {
+            'dir': 'dist',
+            'name': 'c.http.js',
+            'min_name': 'c.http.min.js'
+        },
+        'deploy': {
+            REQUEST_JS          : '/request.js',
+            RESPONSE_JS      : '/response.js',
+            CLIENT_JS           : '/client.js'
+        }
     }
 };
 

@@ -79,7 +79,7 @@ C.factory(C.Enviroment, 'EventData', function () {
          * Is event propagation stopped
          * @returns {Boolean}
          */
-        this.stoped = function () {
+        this.stopped = function () {
             return breakEvent;
         };
 

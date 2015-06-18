@@ -78,12 +78,12 @@ C.factory(C.Enviroment, 'Event', function () {
                 eventsData.before.call(_instance, eventData);
             }
 
-            if (!eventData.stoped()) {
+            if (!eventData.stopped()) {
                 var _delegates = eventsData['subscribers'];
                 for (var _index in _delegates) {
                     var _delegate = _delegates[_index].delegate;
                         _delegate.call(_delegates[_index].context || _instance, eventData, _backupCallContext);
-                    if (eventData.stoped())
+                    if (eventData.stopped())
                         break;
                 }
             }
@@ -120,7 +120,7 @@ C.factory(C.Enviroment, 'Event', function () {
         };
         
         C.mode(this, [
-            'assumed', 'stoped', 'assumeDefault', 'preventDefault',
+            'assumed', 'stopped', 'assumeDefault', 'preventDefault',
             'continuePropagation', 'stopPropagation'
         ], C.MODE_LOCKED);
     };
@@ -199,10 +199,10 @@ C.factory(C.Enviroment, 'Event', function () {
 //     * Is event propagation stopped
 //     * @returns {Boolean}
 //     */
-//    this.stoped = function () {
+//    this.stopped = function () {
 //        return _break;
 //    };
-//    C.mode(this, 'stoped', C.MODE_LOCKED);
+//    C.mode(this, 'stopped', C.MODE_LOCKED);
 //
 //    /**
 //     * Is event assuming the default action
@@ -283,17 +283,17 @@ C.Enviroment.Event = function (_callContext, _defaultBefore, _defaultAfter) {
             _events.before.call(_instance, _eventData, _instance);
         }
 
-        if (!_eventData.stoped()) {
+        if (!_eventData.stopped()) {
             var _delegates = _events['subscribers'];
             for (var _index in _delegates) {
                 var _delegate = _delegates[_index].delegate;
                 _delegate.call(_delegates[_index].context || _instance, _eventData, _backupCallContext);
-                if (_eventData.stoped())
+                if (_eventData.stopped())
                     break;
             }
         }
 
-        if (!_eventData.stoped() && _eventData.assumed()) {
+        if (!_eventData.stopped() && _eventData.assumed()) {
             if (_events.after) {
                 _events.after.call(_instance, _eventData, _instance);
             }

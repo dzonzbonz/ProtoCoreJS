@@ -190,9 +190,9 @@ CJS.prototype = {
         }
         else if (this.isFunction(factory)) {
             // single factory
-            var factoryImplementation = factory.call(instance, method);
+            var factoryImplementation = factory.apply(instance);
 
-            if (this.isString(method) && this.isFunction(factory)) {
+            if (factoryImplementation && this.isString(method) && this.isFunction(factory)) {
             // implement factory result as method
                 this.implement(instance, method, factoryImplementation, mode);
             }
@@ -467,7 +467,7 @@ C.factory(C, 'extend', function (method) {
 
             var methodMode = 0;
             var desc = C.descriptor(parentInstance, parentMethod);
-
+            
             if (!desc.writable) {
                 methodMode = methodMode | C.MODE_READONLY;
             }

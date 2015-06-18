@@ -6,10 +6,23 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script type="text/javascript" src="../dist/c.js"></script>
         <script type="text/javascript" src="../dist/c.enviroment.js"></script>
+        <script type="text/javascript" src="../dist/c.http.js"></script>
         <script type="text/javascript" src="../node_modules/zepto-full/zepto.js"></script>
-        <script type="text/javascript" src="../dist/thread.js"></script>
+        <!--<script type="text/javascript" src="../dist/thread.js"></script>-->
         <script type="text/javascript" language="javascript">
+            function httpRequest() {
+                var _request = new C.Http.Request();
+                _request.setUrl('file:///var/www/ProtoCoreJS/test/index.html');
+                _request.setHeader('Content-Type: text/html');
+                _request.onResponse.subscribe(function (e) {
+                    console.log(e.data());
+                    console.log(e.getHeaders());
+                });
+                C.Http.Client.request(_request);
+            };
+            
             $(document).ready(function () {
+                
                 var CParentClass = function () {
 
                     this.baseMethod = function () {
@@ -51,7 +64,7 @@
                     'value': 1
                 }));
                 
-                $('#eventDataGet').html(JSON.stringify(CEvent.data()));
+//                $('#eventDataGet').html(JSON.stringify(CEvent.data()));
 //                for (var i = 1; i < 200; i++) {
 //                    Multithread.process(
 //                        function Recurse(limit) {
@@ -70,8 +83,6 @@
                 
                 for (var i = 1; i < 10; i++) {
                     (function () {
-                        var ev = new C.Enviroment.Event();
-                        
                         var t = new C.Enviroment.Task(
                             function Recurse(e) {
                                 for (var j = 1; j < 1000000; j++) {
@@ -83,7 +94,7 @@
                                         this.sleep(5);
                                     }
                                 }
-
+                                
                                 return e;
                             }
                         );
@@ -100,9 +111,9 @@
                             }
                         }, t);
                         
-                        t.run({
-                            'task': i
-                        });
+//                        t.run({
+//                            'task': i
+//                        });
                     })();
                 }
 
@@ -111,6 +122,9 @@
         </script>
     </head>
     <body>
+        <h3>Http Request</h3>
+        <div id="httpRequestResponse"></div>
+        <button type="button" onclick="httpRequest();">Request</button>
         <h3>Object Data</h3>
         <div id="objectDataSet"></div>
         <div id="objectDataGet"></div>

@@ -1,7 +1,7 @@
 /** @license
  * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
  * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
- * v0.0.1 (2015/06/12 19:02)
+ * v0.0.1 (2015/06/18 22:10)
  */
 
 (function () {
@@ -184,7 +184,7 @@ C.factory(C.Enviroment, 'EventData', function () {
          * Is event propagation stopped
          * @returns {Boolean}
          */
-        this.stoped = function () {
+        this.stopped = function () {
             return breakEvent;
         };
 
@@ -290,12 +290,12 @@ C.factory(C.Enviroment, 'Event', function () {
                 eventsData.before.call(_instance, eventData);
             }
 
-            if (!eventData.stoped()) {
+            if (!eventData.stopped()) {
                 var _delegates = eventsData['subscribers'];
                 for (var _index in _delegates) {
                     var _delegate = _delegates[_index].delegate;
                         _delegate.call(_delegates[_index].context || _instance, eventData, _backupCallContext);
-                    if (eventData.stoped())
+                    if (eventData.stopped())
                         break;
                 }
             }
@@ -332,7 +332,7 @@ C.factory(C.Enviroment, 'Event', function () {
         };
         
         C.mode(this, [
-            'assumed', 'stoped', 'assumeDefault', 'preventDefault',
+            'assumed', 'stopped', 'assumeDefault', 'preventDefault',
             'continuePropagation', 'stopPropagation'
         ], C.MODE_LOCKED);
     };
@@ -411,10 +411,10 @@ C.factory(C.Enviroment, 'Event', function () {
 //     * Is event propagation stopped
 //     * @returns {Boolean}
 //     */
-//    this.stoped = function () {
+//    this.stopped = function () {
 //        return _break;
 //    };
-//    C.mode(this, 'stoped', C.MODE_LOCKED);
+//    C.mode(this, 'stopped', C.MODE_LOCKED);
 //
 //    /**
 //     * Is event assuming the default action
@@ -495,17 +495,17 @@ C.Enviroment.Event = function (_callContext, _defaultBefore, _defaultAfter) {
             _events.before.call(_instance, _eventData, _instance);
         }
 
-        if (!_eventData.stoped()) {
+        if (!_eventData.stopped()) {
             var _delegates = _events['subscribers'];
             for (var _index in _delegates) {
                 var _delegate = _delegates[_index].delegate;
                 _delegate.call(_delegates[_index].context || _instance, _eventData, _backupCallContext);
-                if (_eventData.stoped())
+                if (_eventData.stopped())
                     break;
             }
         }
 
-        if (!_eventData.stoped() && _eventData.assumed()) {
+        if (!_eventData.stopped() && _eventData.assumed()) {
             if (_events.after) {
                 _events.after.call(_instance, _eventData, _instance);
             }
@@ -614,11 +614,6 @@ C.factory(C.Enviroment, 'Task', function () {
         
     // send message to the initiator
         /**/name/**/.pipe = function (messageID, messageData) {
-//            var pipeData = encodeArguments({
-//                'message': messageID,
-//                'data': messageData
-//            });
-//            self.postMessage(pipeData, [pipeData]);
             self.postMessage({
                 'message': messageID,
                 'data': messageData
@@ -631,21 +626,14 @@ C.factory(C.Enviroment, 'Task', function () {
         };
         
         self.addEventListener('message', function (e) {
-//            var inputArgs = decodeArguments(e.data);
             var inputArgs = e.data;
             
             var value = (/**/name/**/).apply(/**/name/**/, inputArgs);
-            
-//            var buffer = encodeArguments({
-//                'message': false,
-//                'data': value
-//            });
             
             self.postMessage({
                 'message': false,
                 'data': value
             });
-//            self.postMessage(buffer, [buffer]);
             self.close();
         });
     };
@@ -683,10 +671,8 @@ C.factory(C.Enviroment, 'Task', function () {
         var worker = new Worker(resource);
         
         var self = this;
-//        var buffer = encodeArguments(params);
         
         var listener = function (e) {
-//            var piped = decodeArguments(e.data);
             var piped = e.data;
             
             if (piped.message) {
@@ -699,7 +685,6 @@ C.factory(C.Enviroment, 'Task', function () {
         
     // listen to the messages comming from worker
         worker.addEventListener('message', listener);
-//        worker.postMessage(buffer, [buffer]);
         worker.postMessage(params);
         
         return worker;
@@ -747,12 +732,6 @@ C.factory(C.Enviroment, 'Task', function () {
                     }, 
                     [].slice.call(arguments)
                 );
-//                worker = startProcess(
-//                    processResource, 
-//                    callback, 
-//                    pipe, 
-//                    [].slice.call(arguments)
-//                );
         
                 this.onRun.notify(new C.Enviroment.EventData());
             }
@@ -760,20 +739,13 @@ C.factory(C.Enviroment, 'Task', function () {
 
         this.pipe = function () {
             if (running) {
-//                var buffer = encodeArguments({
-//                    'message': messageID,
-//                    'data': messageData
-//                });
-                
                 worker.postMessage([].slice.call(arguments));
-//                worker.postMessage(buffer, [buffer]);
             }
         };
 
         this.stop = function () {
             if (running) {                
                 worker.terminate();
-                
                 running = false;
             }
         };
