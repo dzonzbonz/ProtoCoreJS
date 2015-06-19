@@ -4,23 +4,6 @@
  * @returns {C.Http.Request}
  */
 C.Http.Request = function (settings) {
-    this.MODE_TEXT = 1;
-    this.MODE_BINARY = 2;
-    
-    this.METHOD_GET = 'GET';
-    this.METHOD_POST = 'POST';
-    
-    this.SEND_AS_BINARY = 'BINARY';
-    this.SEND_AS_RAW = 'RAW';
-    
-    this.TYPE_SYNC = 'sync';
-    this.TYPE_ASYNC = 'async';
-    
-    this.CONTENT_TYPE_JSON = 'json';
-    this.CONTENT_TYPE_QUERY = 'query';
-    this.CONTENT_TYPE_FORM = 'form';
-    
-    this.CHARSET_UTF8 = 'UTF-8';
     
     this.getUrl = function () { };
     this.setUrl = function (val) { };
@@ -58,6 +41,33 @@ C.Http.Request = function (settings) {
 
 C.Http.Request.prototype = new C.Enviroment.Object();
 C.Http.Request.prototype.constructor = C.Http.Request;
+
+C.Http.Request.MODE_TEXT = 1;
+C.Http.Request.MODE_BINARY = 2;
+    
+C.Http.Request.METHOD_GET = 'GET';
+C.Http.Request.METHOD_POST = 'POST';
+    
+C.Http.Request.SEND_AS_BINARY = 'BINARY';
+C.Http.Request.SEND_AS_RAW = 'RAW';
+    
+C.Http.Request.TYPE_SYNC = 'sync';
+C.Http.Request.TYPE_ASYNC = 'async';
+    
+C.Http.Request.CONTENT_TYPE_JSON = 'json';
+C.Http.Request.CONTENT_TYPE_QUERY = 'query';
+C.Http.Request.CONTENT_TYPE_FORM = 'form';
+    
+C.Http.Request.CHARSET_UTF8 = 'UTF-8';
+
+C.mode(C.Http.Request, [
+    "MODE_TEXT", "MODE_BINARY", 
+    "METHOD_GET", "METHOD_POST",
+    "SEND_AS_BINARY", "SEND_AS_RAW",
+    "TYPE_SYNC", "TYPE_SYNC",
+    "CONTENT_TYPE_JSON", "CONTENT_TYPE_JSON", "CONTENT_TYPE_FORM",
+    "CHARSET_UTF8"
+], C.MODE_LOCKED);
 
 C.factory(C.Http, 'Request', function () {
     var pack = {
