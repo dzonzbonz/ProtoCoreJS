@@ -13,9 +13,10 @@ C.Http.Response = function () {
     
     this.isError = function (val) {};
     this.isSuccess = function (val) {};
+    this.isDone = function (val) {};
     
     this.getHeaders = function () { };
-    
+    this.getResponse = function () { };
 };
 
 C.Http.Response.prototype = new C.Enviroment.EventData();
@@ -25,7 +26,10 @@ C.factory(C.Http, 'Response', function () {
     var func = function(value) {
         return value.substring(1) !== '';
     };
-    
+    function trim(x) {
+        return x.replace(/^\s+|\s+$/gm,'');
+    }
+
     var __constructor = function () {
     /* Variables */
         var state = 0;
@@ -56,7 +60,8 @@ C.factory(C.Http, 'Response', function () {
                         var sendHeaderName = responseHeadersRaw[k].substring(0, breakPos);
                         var sendHeaderValue = responseHeadersRaw[k].substring(breakPos + 1);
                         
-                        responseHeaders[sendHeaderName] = sendHeaderValue;
+//                        responseHeaders[sendHeaderName.trim()] = sendHeaderValue.trim();
+                        responseHeaders[trim(sendHeaderName)] = trim(sendHeaderValue);
                     }
                 }
             }
@@ -64,15 +69,23 @@ C.factory(C.Http, 'Response', function () {
             return responseHeaders;
         };
         
+        this.getResponse = function () {
+            return this.data('response');
+        };
+        
         this.isDone = function () {
             var state = this.getState();
-            return state == 4;
+            return state === 4;
+        };
+        
+        this.isError = function () {
+            return !this.isSuccess();
         };
         
         this.isSuccess = function () {
             var status = this.data('status');
             var state = this.getState();
-            return state == 4 && status >= 200 && status < 400;
+            return state === 4 && status >= 200 && status < 400;
         };
         
         var self = this;

@@ -16,11 +16,16 @@ C.Http.Request = function (settings) {
     this.TYPE_SYNC = 'sync';
     this.TYPE_ASYNC = 'async';
     
+    this.CONTENT_TYPE_JSON = 'json';
+    this.CONTENT_TYPE_QUERY = 'query';
+    this.CONTENT_TYPE_FORM = 'form';
+    
     this.CHARSET_UTF8 = 'UTF-8';
     
     this.getUrl = function () { };
     this.setUrl = function (val) { };
     
+    this.encodeContent = function (contentType) {};
     this.getContent = function () { };
     this.setContent = function (val) { };
     
@@ -55,6 +60,55 @@ C.Http.Request.prototype = new C.Enviroment.Object();
 C.Http.Request.prototype.constructor = C.Http.Request;
 
 C.factory(C.Http, 'Request', function () {
+    var pack = {
+        multipartFormData : function (data, key, level, boundary) {
+            var boundary = C.isDefined(boundary) ? boundary : C.guid(4);
+                level = C.isDefined(level) ? level : 1;
+            var content = '';
+            var self = this;
+            
+            C.traverse(data, function (dataKey, dataValue) {
+                var finalKey = (C.isDefined(key) && key != null)
+                            ? key + '[' + dataKey + ']'
+                            : dataKey;
+                            
+                content += (C.isObject(dataValue) || C.isArray(dataValue))
+                        ? self.multipartFormData(dataValue, finalKey, level + 1, boundary)
+                        : "--"  + boundary
+                                + "\r\nContent-Disposition: form-data; name=" + finalKey
+                                + "\r\nContent-type: application/octet-stream"
+                                + "\r\n\r\n" + dataValue + "\r\n";
+                
+            });
+            
+            if (level == 1) {
+                content += "--"+boundary+"--\r\n";
+            }
+            
+            return content;
+        },
+        xWwwFormUrlEncoded: function (data, key, level) {
+            level = C.isDefined(level) ? level : 1;
+            
+            var query = '';
+            var self = this;
+            
+            C.traverse(data, function (dataKey, dataValue) {
+                var finalKey = (C.isDefined(key) && key != null)
+                            ? key + '[' + dataKey + ']'
+                            : dataKey;
+                            
+                query += (C.isObject(dataValue) || C.isArray(dataValue))
+                      ? self.xWwwFormUrlEncoded(dataValue, finalKey, level + 1)
+                      : (level === 1 && query.length === 0 ? '' : "&") + encodeURIComponent(finalKey) + '=' + encodeURIComponent(dataValue);
+            });
+            
+            return query;
+        },
+        applicationJson: function (data) {
+            return JSON.stringify(data);
+        }
+    };
     
     var __constructor = function (settings) {
     /* Variables */
@@ -78,7 +132,25 @@ C.factory(C.Http, 'Request', function () {
         this.getUrl = function () { return url; };
         this.setUrl = function (val) { url = val; return this; };
         
-        this.getContent = function () { 
+        this.encodeContent = function (contentType) {
+            switch (contentType) {
+                case self.CONTENT_TYPE_FORM:
+                    return pack.multipartFormData(this.data());
+                    break;
+                case self.CONTENT_TYPE_QUERY:
+                    return pack.xWwwFormUrlEncoded(this.data());
+                    break;
+                case self.CONTENT_TYPE_JSON:
+                    return pack.applicationJson(this.data());
+                    break;
+                default:
+                    break;
+            }
+            
+            return null;
+        };
+        
+        this.getContent = function () {
             return content;
         };
         this.setContent = function (val) { 
@@ -130,7 +202,7 @@ C.factory(C.Http, 'Request', function () {
                 var sendHeaderName = key.substring(0, breakPos);
                 var sendHeaderValue = key.substring(breakPos + 1);
                 
-                this.setHeader(sendHeaderName, sendHeaderValue);
+                this.setHeader(sendHeaderName.trim(), sendHeaderValue.trim());
             }
             else {
                 headers[key.toLowerCase()] = val;

@@ -11,14 +11,55 @@
         <!--<script type="text/javascript" src="../dist/thread.js"></script>-->
         <script type="text/javascript" language="javascript">
             function httpRequest() {
-                var _request = new C.Http.Request();
-                _request.setUrl('file:///var/www/ProtoCoreJS/test/index.html');
-                _request.setHeader('Content-Type: text/html');
-                _request.onResponse.subscribe(function (e) {
-                    console.log(e.data());
-                    console.log(e.getHeaders());
+                var customerGET = new C.Http.Request();
+                customerGET.setUrl('http://icard.api/digital-loyalty-card/icard-horisen/customer/1');
+                customerGET.setMethod(customerGET.METHOD_GET);
+                customerGET.setHeader('Content-Type: application/json');
+                
+                customerGET.onResponse.subscribe(
+                /**
+                 * @param {C.Http.Response} e Response evend data
+                 * @returns {void}
+                 */
+                function (e) {
+                    if (e.isDone() && e.isSuccess()) {
+                        console.log(e.data());
+                        console.log(e.getHeaders());
+                        console.log(JSON.parse(e.getResponse()));
+                    }
                 });
-                C.Http.Client.request(_request);
+                C.Http.Client.request(customerGET);
+                
+                var shopPurchase = new C.Http.Request();
+                    shopPurchase.setUrl('http://icard.api/digital-loyalty-card/icard-horisen/purchase');
+                    shopPurchase.setMethod(customerGET.METHOD_POST);
+                    shopPurchase.setHeader('Content-Type: application/json');
+                    shopPurchase.data({
+                        "mobile":"+381638014744",
+                        "shop_id":16,
+                        "employee_id":8,
+                        "receipt_number":"4",
+                        "amount": "1000"
+                    });
+                    shopPurchase.setContent(shopPurchase.encodeContent(shopPurchase.CONTENT_TYPE_JSON));
+                    shopPurchase.onResponse.subscribe(
+                /**
+                 * @param {C.Http.Response} e Response evend data
+                 * @returns {void}
+                 */
+                function (e) {
+                    if (e.isDone() && e.isSuccess()) {
+                        console.log(e.data());
+                        console.log(e.getHeaders());
+                        console.log(JSON.parse(e.getResponse()));
+                    }
+                    else if (e.isDone() && e.isError()) {
+                        console.log(e.data());
+                        console.log(e.getHeaders());
+                        console.log(JSON.parse(e.getResponse()));
+                    }
+                });
+                C.Http.Client.request(shopPurchase);
             };
             
             $(document).ready(function () {

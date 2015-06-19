@@ -1,7 +1,7 @@
 /** @license
  * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
  * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
- * v0.0.1 (2015/06/18 22:10)
+ * v0.0.1 (2015/06/19 09:34)
  */
 
 (function () {
@@ -22,9 +22,10 @@ C.Http.Response = function () {
     
     this.isError = function (val) {};
     this.isSuccess = function (val) {};
+    this.isDone = function (val) {};
     
     this.getHeaders = function () { };
-    
+    this.getResponse = function () { };
 };
 
 C.Http.Response.prototype = new C.Enviroment.EventData();
@@ -34,7 +35,10 @@ C.factory(C.Http, 'Response', function () {
     var func = function(value) {
         return value.substring(1) !== '';
     };
-    
+    function trim(x) {
+        return x.replace(/^\s+|\s+$/gm,'');
+    }
+
     var __constructor = function () {
     /* Variables */
         var state = 0;
@@ -65,7 +69,8 @@ C.factory(C.Http, 'Response', function () {
                         var sendHeaderName = responseHeadersRaw[k].substring(0, breakPos);
                         var sendHeaderValue = responseHeadersRaw[k].substring(breakPos + 1);
                         
-                        responseHeaders[sendHeaderName] = sendHeaderValue;
+//                        responseHeaders[sendHeaderName.trim()] = sendHeaderValue.trim();
+                        responseHeaders[trim(sendHeaderName)] = trim(sendHeaderValue);
                     }
                 }
             }
@@ -73,15 +78,23 @@ C.factory(C.Http, 'Response', function () {
             return responseHeaders;
         };
         
+        this.getResponse = function () {
+            return this.data('response');
+        };
+        
         this.isDone = function () {
             var state = this.getState();
-            return state == 4;
+            return state === 4;
+        };
+        
+        this.isError = function () {
+            return !this.isSuccess();
         };
         
         this.isSuccess = function () {
             var status = this.data('status');
             var state = this.getState();
-            return state == 4 && status >= 200 && status < 400;
+            return state === 4 && status >= 200 && status < 400;
         };
         
         var self = this;
@@ -110,11 +123,16 @@ C.Http.Request = function (settings) {
     this.TYPE_SYNC = 'sync';
     this.TYPE_ASYNC = 'async';
     
+    this.CONTENT_TYPE_JSON = 'json';
+    this.CONTENT_TYPE_QUERY = 'query';
+    this.CONTENT_TYPE_FORM = 'form';
+    
     this.CHARSET_UTF8 = 'UTF-8';
     
     this.getUrl = function () { };
     this.setUrl = function (val) { };
     
+    this.encodeContent = function (contentType) {};
     this.getContent = function () { };
     this.setContent = function (val) { };
     
@@ -149,6 +167,55 @@ C.Http.Request.prototype = new C.Enviroment.Object();
 C.Http.Request.prototype.constructor = C.Http.Request;
 
 C.factory(C.Http, 'Request', function () {
+    var pack = {
+        multipartFormData : function (data, key, level, boundary) {
+            var boundary = C.isDefined(boundary) ? boundary : C.guid(4);
+                level = C.isDefined(level) ? level : 1;
+            var content = '';
+            var self = this;
+            
+            C.traverse(data, function (dataKey, dataValue) {
+                var finalKey = (C.isDefined(key) && key != null)
+                            ? key + '[' + dataKey + ']'
+                            : dataKey;
+                            
+                content += (C.isObject(dataValue) || C.isArray(dataValue))
+                        ? self.multipartFormData(dataValue, finalKey, level + 1, boundary)
+                        : "--"  + boundary
+                                + "\r\nContent-Disposition: form-data; name=" + finalKey
+                                + "\r\nContent-type: application/octet-stream"
+                                + "\r\n\r\n" + dataValue + "\r\n";
+                
+            });
+            
+            if (level == 1) {
+                content += "--"+boundary+"--\r\n";
+            }
+            
+            return content;
+        },
+        xWwwFormUrlEncoded: function (data, key, level) {
+            level = C.isDefined(level) ? level : 1;
+            
+            var query = '';
+            var self = this;
+            
+            C.traverse(data, function (dataKey, dataValue) {
+                var finalKey = (C.isDefined(key) && key != null)
+                            ? key + '[' + dataKey + ']'
+                            : dataKey;
+                            
+                query += (C.isObject(dataValue) || C.isArray(dataValue))
+                      ? self.xWwwFormUrlEncoded(dataValue, finalKey, level + 1)
+                      : (level === 1 && query.length === 0 ? '' : "&") + encodeURIComponent(finalKey) + '=' + encodeURIComponent(dataValue);
+            });
+            
+            return query;
+        },
+        applicationJson: function (data) {
+            return JSON.stringify(data);
+        }
+    };
     
     var __constructor = function (settings) {
     /* Variables */
@@ -172,7 +239,25 @@ C.factory(C.Http, 'Request', function () {
         this.getUrl = function () { return url; };
         this.setUrl = function (val) { url = val; return this; };
         
-        this.getContent = function () { 
+        this.encodeContent = function (contentType) {
+            switch (contentType) {
+                case self.CONTENT_TYPE_FORM:
+                    return pack.multipartFormData(this.data());
+                    break;
+                case self.CONTENT_TYPE_QUERY:
+                    return pack.xWwwFormUrlEncoded(this.data());
+                    break;
+                case self.CONTENT_TYPE_JSON:
+                    return pack.applicationJson(this.data());
+                    break;
+                default:
+                    break;
+            }
+            
+            return null;
+        };
+        
+        this.getContent = function () {
             return content;
         };
         this.setContent = function (val) { 
@@ -224,7 +309,7 @@ C.factory(C.Http, 'Request', function () {
                 var sendHeaderName = key.substring(0, breakPos);
                 var sendHeaderValue = key.substring(breakPos + 1);
                 
-                this.setHeader(sendHeaderName, sendHeaderValue);
+                this.setHeader(sendHeaderName.trim(), sendHeaderValue.trim());
             }
             else {
                 headers[key.toLowerCase()] = val;
@@ -372,23 +457,6 @@ C.factory(C.Http.Client, function () {
             } else {
                 req.onreadystatechange = function (aEvt) { // aEvt has stopPropagation(), preventDefault(); see https://developer.mozilla.org/en/NsIDOMEvent
                     // Other XMLHttpRequest properties: multipart, responseXML, status, statusText, upload, withCredentials
-                    /*
-                     PHP Constants:
-                     STREAM_NOTIFY_RESOLVE   1       A remote address required for this stream has been resolved, or the resolution failed. See severity  for an indication of which happened.
-                     STREAM_NOTIFY_CONNECT   2     A connection with an external resource has been established.
-                     STREAM_NOTIFY_AUTH_REQUIRED 3     Additional authorization is required to access the specified resource. Typical issued with severity level of STREAM_NOTIFY_SEVERITY_ERR.
-                     STREAM_NOTIFY_MIME_TYPE_IS  4     The mime-type of resource has been identified, refer to message for a description of the discovered type.
-                     STREAM_NOTIFY_FILE_SIZE_IS  5     The size of the resource has been discovered.
-                     STREAM_NOTIFY_REDIRECTED    6     The external resource has redirected the stream to an alternate location. Refer to message .
-                     STREAM_NOTIFY_PROGRESS  7     Indicates current progress of the stream transfer in bytes_transferred and possibly bytes_max as well.
-                     STREAM_NOTIFY_COMPLETED 8     There is no more data available on the stream.
-                     STREAM_NOTIFY_FAILURE   9     A generic error occurred on the stream, consult message and message_code for details.
-                     STREAM_NOTIFY_AUTH_RESULT   10     Authorization has been completed (with or without success).
-
-                     STREAM_NOTIFY_SEVERITY_INFO 0     Normal, non-error related, notification.
-                     STREAM_NOTIFY_SEVERITY_WARN 1     Non critical error condition. Processing may continue.
-                     STREAM_NOTIFY_SEVERITY_ERR  2     A critical error occurred. Processing cannot continue.
-                     */
                     response.data({
                         state: req.readyState,
                         response: req.responseText,
@@ -402,41 +470,26 @@ C.factory(C.Http.Client, function () {
                     // Need to add message, etc.
 //                        var bytes_transferred;
                     switch (req.readyState) {
-                        case 0:
-                            //     UNINITIALIZED     open() has not been called yet.
-//                                notification.call(objContext, 0, 0, '', 0, 0, 0);
+                        case 0: // UNINITIALIZED 
                             break;
-                        case 1:
-                            //     LOADING     send() has not been called yet.
-//                                notification.call(objContext, 0, 0, '', 0, 0, 0);
+                        case 1: // LOADING 
                             break;
-                        case 2:
-                            //     LOADED     send() has been called, and headers and status are available.
-//                                notification.call(objContext, 0, 0, '', 0, 0, 0);
+                        case 2: // LOADED 
                             break;
-                        case 3:
-                            //     INTERACTIVE     Downloading; responseText holds partial data.
+                        case 3: // INTERACTIVE 
                             // One character is two bytes
                             response.data('bytes', req.responseText.length * 2);
                             break;
-                        case 4:
-                            //     COMPLETED     The operation is complete.
+                        case 4: // COMPLETED
                             if (req.status >= 200 && req.status < 400) {
-                                // One character is two bytes
                                 response.data('bytes', req.responseText.length * 2);
-//                                    bytes_transferred = req.responseText.length * 2; 
-//                                    notification.call(objContext, 8, 0, '', req.status, bytes_transferred, 0);
-                            } else if (req.status === 403) { // Fix: These two are finished except for message
-//                                    notification.call(objContext, 10, 2, '', req.status, 0, 0);
-                            } else { // Errors
-//                                    notification.call(objContext, 9, 2, '', req.status, 0, 0);
                             }
-
-//                            r.onResponse.notify(response);
-
+                            else if (req.status === 403) { // Fix: These two are finished except for message
+                            }
+                            else { // Errors
+                            }
                             break;
                         default:
-//                                throw 'Unrecognized ready state for file_get_contents()';
                     }
 
                     r.onResponse.notify(response);
@@ -484,7 +537,16 @@ C.factory(C.Http.Client, function () {
             }
         } catch (e) {
             // catches exception reported in issue #66
-//            console.log(e);
+            response.data({
+                state: req.readyState,
+                response: req.responseText,
+                responseXML: req.responseXML,
+                status: req.status,
+                statusText: req.statusText,
+                bytes: 0,
+                error: e
+            });
+            r.onResponse.notify(response);
             return false;
         }
         
@@ -499,7 +561,7 @@ C.factory(C.Http.Client, function () {
             }
         }
 
-        if (r.getType() != r.TYPE_ASYNC) {
+        if (r.getType() !== r.TYPE_ASYNC) {
             response.data({
                 state: req.readyState,
                 response: req.responseText,
@@ -510,6 +572,8 @@ C.factory(C.Http.Client, function () {
             });
             r.onResponse.notify(response);
         }
+        
+        return true;
     };
     
     var self = this;
