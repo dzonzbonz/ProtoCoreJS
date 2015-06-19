@@ -1,12 +1,341 @@
 /** @license
  * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
  * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
- * v0.0.1 (2015/06/19 09:34)
+ * v0.0.1 (2015/06/19 13:55)
  */
 
 (function () {
 var factory = function (C) {
     C.Http = {};
+/**
+ * @constructor
+ * @param {String} filename
+ * @param {C.Enviroment.Request} request
+ * 
+ * @returns {C.Http.FileInterface}
+ */
+C.Http.Data = function () {
+
+    this.toString = function () { };
+    this.fromString = function (jsonToParse) {};
+
+    this.toQuery = function () { };
+    this.fromQuery = function (stringToParse) {};
+
+    this.toStream = function () { };
+    this.fromStream = function (stringToParse) { };
+    
+};
+
+C.Http.Data.prototype = new C.Enviroment.Object();
+C.Http.Data.prototype.constructor = C.Http.Data;
+
+C.factory(C.Http, 'Data', function () {
+    var decode = {
+        'xWwwFormUrlEncoded': function (str) {
+            var strArr = String(str)
+                    .replace(/^&/, '')
+                    .replace(/&$/, '')
+                    .split('&'),
+                    sal = strArr.length,
+                    i, j, ct, p, lastObj, obj, lastIter, undef, chr, tmp, key, value,
+                    postLeftBracketPos, keys, keysLen,
+                    fixStr = function (str) {
+                        return decodeURIComponent(str.replace(/\+/g, '%20'));
+                    },
+                    decoded = {};
+
+            for (i = 0; i < sal; i++) {
+                tmp = strArr[i].split('=');
+                key = fixStr(tmp[0]);
+                value = (tmp.length < 2) ? '' : fixStr(tmp[1]);
+
+                while (key.charAt(0) === ' ') {
+                    key = key.slice(1);
+                }
+                if (key.indexOf('\x00') > -1) {
+                    key = key.slice(0, key.indexOf('\x00'));
+                }
+                if (key && key.charAt(0) !== '[') {
+                    keys = [];
+                    postLeftBracketPos = 0;
+                    for (j = 0; j < key.length; j++) {
+                        if (key.charAt(j) === '[' && !postLeftBracketPos) {
+                            postLeftBracketPos = j + 1;
+                        } else if (key.charAt(j) === ']') {
+                            if (postLeftBracketPos) {
+                                if (!keys.length) {
+                                    keys.push(key.slice(0, postLeftBracketPos - 1));
+                                }
+                                keys.push(key.substr(postLeftBracketPos, j - postLeftBracketPos));
+                                postLeftBracketPos = 0;
+                                if (key.charAt(j + 1) !== '[') {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (!keys.length) {
+                        keys = [key];
+                    }
+                    for (j = 0; j < keys[0].length; j++) {
+                        chr = keys[0].charAt(j);
+                        if (chr === ' ' || chr === '.' || chr === '[') {
+                            keys[0] = keys[0].substr(0, j) + '_' + keys[0].substr(j + 1);
+                        }
+                        if (chr === '[') {
+                            break;
+                        }
+                    }
+
+                    obj = decoded;
+                    for (j = 0, keysLen = keys.length; j < keysLen; j++) {
+                        key = keys[j].replace(/^['"]/, '')
+                                .replace(/['"]$/, '');
+                        lastIter = j !== keys.length - 1;
+                        lastObj = obj;
+                        if ((key !== '' && key !== ' ') || j === 0) {
+                            if (obj[key] === undef) {
+                                obj[key] = {};
+                            }
+                            obj = obj[key];
+                        } else { // To insert new dimension
+                            ct = -1;
+                            for (p in obj) {
+                                if (obj.hasOwnProperty(p)) {
+                                    if (+p > ct && p.match(/^\d+$/g)) {
+                                        ct = +p;
+                                    }
+                                }
+                            }
+                            key = ct + 1;
+                        }
+                    }
+                    lastObj[key] = value;
+                }
+            }
+            
+            return decoded;
+        },
+        'applicationJson': function (data) {
+            return JSON.parse(data);
+        }
+    };
+    var encode = {
+        'multipartFormData' : function (data, key, level, boundary) {
+            var boundary = C.isDefined(boundary) ? boundary : C.guid(4);
+                level = C.isDefined(level) ? level : 1;
+            var content = '';
+            var self = this;
+            
+            C.traverse(data, function (dataKey, dataValue) {
+                var finalKey = (C.isDefined(key) && key != null)
+                            ? key + '[' + dataKey + ']'
+                            : dataKey;
+                            
+                content += (C.isObject(dataValue) || C.isArray(dataValue))
+                        ? self.multipartFormData(dataValue, finalKey, level + 1, boundary)
+                        : "--"  + boundary
+                                + "\r\nContent-Disposition: form-data; name=" + finalKey
+                                + "\r\nContent-type: application/octet-stream"
+                                + "\r\n\r\n" + dataValue + "\r\n";
+                
+            });
+            
+            if (level == 1) {
+                content += "--"+boundary+"--\r\n";
+            }
+            
+            return content;
+        },
+        'xWwwFormUrlEncoded': function (data, key, level) {
+            level = C.isDefined(level) ? level : 1;
+            
+            var query = '';
+            var self = this;
+            
+            C.traverse(data, function (dataKey, dataValue) {
+                var finalKey = (C.isDefined(key) && key != null)
+                            ? key + '[' + dataKey + ']'
+                            : dataKey;
+                        
+                query += (C.isObject(dataValue) || C.isArray(dataValue))
+                      ? self.xWwwFormUrlEncoded(dataValue, finalKey, level + 1)
+                      : (level === 1 && query.length === 0 ? '' : "&") + encodeURIComponent(finalKey) + '=' + encodeURIComponent(dataValue);
+            });
+            
+            return query;
+        },
+        'applicationJson': function (data) {
+            return JSON.stringify(data);
+        }
+    };
+    
+    var __constructor = function () {
+        /* Inheritance */
+        var parent = new C.Enviroment.Object();
+            C.extend(this, parent);
+        
+        /* Implementation */
+        this.toString = function () {
+            return encode.applicationJson(this.data());
+        };
+        this.fromString = function (jsonToParse) {
+            this.data(decode.applicationJson(jsonToParse));
+        };
+
+        this.toQuery = function () {
+            return encode.xWwwFormUrlEncoded(this.data());
+        };
+        this.fromQuery = function (stringToParse) {
+            this.data(decode.xWwwFormUrlEncoded(stringToParse));
+        };
+
+        this.toStream = function () {
+            return encode.multipartFormData(this.data());
+        };
+        this.fromStream = function (stringToParse) {
+            
+        };
+    };
+
+    __constructor.prototype = new C.Http.Data();
+    __constructor.prototype.constructor = C.Http.Data;
+
+    return __constructor;
+});
+/**
+ * @constructor
+ * @param {String} filename
+ * @param {C.Enviroment.Request} request
+ * 
+ * @returns {C.Http.FileInterface}
+ */
+C.Http.Uri = function (uri) {
+
+    this.parse = function (uriToParse) { };
+
+    this.toJSON = function () { };
+
+    this.build = function () { };
+};
+
+C.factory(C.Http, 'Uri', function () {
+    
+    var decode = {
+        'anchor': function (uriToParse) {
+            var parser = document.createElement('a');
+            parser.href = uriToParse;
+            return parser;
+        },
+        'url':
+        /**
+         * 
+         * @param {String} str
+         * @param {String} component
+         * @returns {Object} {scheme: 'http', host: 'hostname', user: 'username', pass: 'password', path: '/path', query: 'arg=value', fragment: 'anchor'}
+         */
+        function (str, mode, component) {
+            var
+                    query,
+                    key = ['source', 'protocol', 'authority', 'userInfo', 'user', 'pass', 'host', 'port',
+                        'relative', 'path', 'directory', 'file', 'query', 'hash'
+                    ],
+                    mode = C.isDefined(mode) ? mode : 'php',
+                    parser = {
+                        php: /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
+                        strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
+                        loose: /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/\/?)?((?:(([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/ // Added one optional slash to post-scheme to catch file:/// (should restrict this)
+                    };
+
+            var m = parser[mode].exec(str),
+                    uri = {},
+                    i = 14;
+
+            while (i--) {
+                if (m[i]) {
+                    uri[key[i]] = m[i];
+                }
+            }
+
+            if (component) {
+                return uri[component.toLowerCase()];
+            }
+
+            var name = 'queryData';
+            parser = /(?:^|&)([^&=]*)=?([^&]*)/g;
+            uri[name] = {};
+            query = uri[key[12]] || '';
+            query.replace(parser, function ($0, $1, $2) {
+                if ($1) {
+                    uri[name][$1] = $2;
+                }
+            });
+
+            delete uri.source;
+            return uri;
+        },
+        'query': function () {
+
+        }
+    };
+    var __constructor = function (uriToParse) {
+        /* Variables */
+        var uriProtocol = '';
+        var uriHostName = '';
+        var uriPort = '';
+        var uriPathName = '';
+        var uriQuery = '';
+        var uriQueryData = new C.Http.Data();
+        var uriHash = '';
+        
+        /* Implementation */
+        this.parse = function (uriToParse) {
+            var parser = decode.url(uriToParse);
+
+            uriProtocol = C.isDefined(parser.protocol) ? parser.protocol : '';
+            uriHostName = C.isDefined(parser.host) ? parser.host : '';
+            uriPort = C.isDefined(parser.port) ? parser.port : '';
+            uriPathName = C.isDefined(parser.path) ? parser.path : '';
+            uriQuery = C.isDefined(parser.query) ? parser.query : '';
+            uriQueryData.fromQuery(uriQuery);
+            uriHash = C.isDefined(parser.hash) ? parser.hash : '';
+
+            return this;
+        };
+
+        this.toJSON = function () {
+            return {
+                protocol: uriProtocol,
+                host: uriHostName,
+                port: uriPort,
+                path: uriPathName,
+                query: uriQuery,
+                data: uriQueryData.data(),
+                hash: uriHash
+            };
+        };
+
+        this.build = function () {
+            var q = uriQueryData.toQuery();
+            return uriProtocol + '//'
+                    + uriHostName
+                    + (uriPort.length > 0 ? ':' + uriPort : '')
+                    + (uriPathName.length > 0 ? '/' + uriPathName : '')
+                    + (q.length > 0 ? '?' + q : '')
+                    + (uriHash.length > 0 ? '#' + uriHash : '');
+        };
+
+        if (C.isDefined(uriToParse)) {
+            this.parse(uriToParse);
+        }
+    };
+
+    __constructor.prototype = new C.Http.Uri();
+    __constructor.prototype.constructor = C.Http.Uri;
+
+    return __constructor;
+});
 /**
  * 
  * @constructor
@@ -111,28 +440,27 @@ C.factory(C.Http, 'Response', function () {
  * @returns {C.Http.Request}
  */
 C.Http.Request = function (settings) {
-    this.MODE_TEXT = 1;
-    this.MODE_BINARY = 2;
-    
-    this.METHOD_GET = 'GET';
-    this.METHOD_POST = 'POST';
-    
-    this.SEND_AS_BINARY = 'BINARY';
-    this.SEND_AS_RAW = 'RAW';
-    
-    this.TYPE_SYNC = 'sync';
-    this.TYPE_ASYNC = 'async';
-    
-    this.CONTENT_TYPE_JSON = 'json';
-    this.CONTENT_TYPE_QUERY = 'query';
-    this.CONTENT_TYPE_FORM = 'form';
-    
-    this.CHARSET_UTF8 = 'UTF-8';
+//    this.MODE_TEXT = 1;
+//    this.MODE_BINARY = 2;
+//    
+//    this.METHOD_GET = 'GET';
+//    this.METHOD_POST = 'POST';
+//    
+//    this.SEND_AS_BINARY = 'BINARY';
+//    this.SEND_AS_RAW = 'RAW';
+//    
+//    this.TYPE_SYNC = 'sync';
+//    this.TYPE_ASYNC = 'async';
+//    
+//    this.CONTENT_TYPE_JSON = 'json';
+//    this.CONTENT_TYPE_QUERY = 'query';
+//    this.CONTENT_TYPE_FORM = 'form';
+//    
+//    this.CHARSET_UTF8 = 'UTF-8';
     
     this.getUrl = function () { };
     this.setUrl = function (val) { };
     
-    this.encodeContent = function (contentType) {};
     this.getContent = function () { };
     this.setContent = function (val) { };
     
@@ -166,56 +494,29 @@ C.Http.Request = function (settings) {
 C.Http.Request.prototype = new C.Enviroment.Object();
 C.Http.Request.prototype.constructor = C.Http.Request;
 
+C.Http.Request.prototype.MODE_TEXT = 1;
+C.Http.Request.prototype.MODE_BINARY = 2;
+    
+C.Http.Request.prototype.METHOD_GET = 'GET';
+C.Http.Request.prototype.METHOD_POST = 'POST';
+    
+C.Http.Request.prototype.SEND_AS_BINARY = 'BINARY';
+C.Http.Request.prototype.SEND_AS_RAW = 'RAW';
+    
+C.Http.Request.prototype.TYPE_SYNC = 'sync';
+C.Http.Request.prototype.TYPE_ASYNC = 'async';
+    
+C.Http.Request.prototype.CHARSET_UTF8 = 'UTF-8';
+
+C.mode(C.Http.Request.prototype, [
+    "MODE_TEXT", "MODE_BINARY", 
+    "METHOD_GET", "METHOD_POST",
+    "SEND_AS_BINARY", "SEND_AS_RAW",
+    "TYPE_SYNC", "TYPE_SYNC",
+    "CHARSET_UTF8"
+], C.MODE_LOCKED);
+
 C.factory(C.Http, 'Request', function () {
-    var pack = {
-        multipartFormData : function (data, key, level, boundary) {
-            var boundary = C.isDefined(boundary) ? boundary : C.guid(4);
-                level = C.isDefined(level) ? level : 1;
-            var content = '';
-            var self = this;
-            
-            C.traverse(data, function (dataKey, dataValue) {
-                var finalKey = (C.isDefined(key) && key != null)
-                            ? key + '[' + dataKey + ']'
-                            : dataKey;
-                            
-                content += (C.isObject(dataValue) || C.isArray(dataValue))
-                        ? self.multipartFormData(dataValue, finalKey, level + 1, boundary)
-                        : "--"  + boundary
-                                + "\r\nContent-Disposition: form-data; name=" + finalKey
-                                + "\r\nContent-type: application/octet-stream"
-                                + "\r\n\r\n" + dataValue + "\r\n";
-                
-            });
-            
-            if (level == 1) {
-                content += "--"+boundary+"--\r\n";
-            }
-            
-            return content;
-        },
-        xWwwFormUrlEncoded: function (data, key, level) {
-            level = C.isDefined(level) ? level : 1;
-            
-            var query = '';
-            var self = this;
-            
-            C.traverse(data, function (dataKey, dataValue) {
-                var finalKey = (C.isDefined(key) && key != null)
-                            ? key + '[' + dataKey + ']'
-                            : dataKey;
-                            
-                query += (C.isObject(dataValue) || C.isArray(dataValue))
-                      ? self.xWwwFormUrlEncoded(dataValue, finalKey, level + 1)
-                      : (level === 1 && query.length === 0 ? '' : "&") + encodeURIComponent(finalKey) + '=' + encodeURIComponent(dataValue);
-            });
-            
-            return query;
-        },
-        applicationJson: function (data) {
-            return JSON.stringify(data);
-        }
-    };
     
     var __constructor = function (settings) {
     /* Variables */
@@ -238,24 +539,6 @@ C.factory(C.Http, 'Request', function () {
     /* Implementation */
         this.getUrl = function () { return url; };
         this.setUrl = function (val) { url = val; return this; };
-        
-        this.encodeContent = function (contentType) {
-            switch (contentType) {
-                case self.CONTENT_TYPE_FORM:
-                    return pack.multipartFormData(this.data());
-                    break;
-                case self.CONTENT_TYPE_QUERY:
-                    return pack.xWwwFormUrlEncoded(this.data());
-                    break;
-                case self.CONTENT_TYPE_JSON:
-                    return pack.applicationJson(this.data());
-                    break;
-                default:
-                    break;
-            }
-            
-            return null;
-        };
         
         this.getContent = function () {
             return content;
@@ -352,6 +635,8 @@ C.factory(C.Http, 'Request', function () {
                 }
             });
         }
+        
+        C.mode(this, [ "onResponse" ], C.MODE_LOCKED);
     };
     
     __constructor.prototype = new C.Http.Request();
@@ -361,13 +646,12 @@ C.factory(C.Http, 'Request', function () {
 }, C.MODE_LOCKED);
 /**
  * @constructor
- * @extends C.Enviroment.Object
  * @param {String} filename
- * @param {C.Enviroment.Request} readParams
+ * @param {C.Enviroment.Request} request
  * 
- * @returns {C.Enviroment.File}
+ * @returns {C.Http.ClientInterface}
  */
-C.Http.ClientInterface = function (filename, readParams) {
+C.Http.ClientInterface = function (request) {
 
     this.base = function () {
     };

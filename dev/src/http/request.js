@@ -4,11 +4,27 @@
  * @returns {C.Http.Request}
  */
 C.Http.Request = function (settings) {
+//    this.MODE_TEXT = 1;
+//    this.MODE_BINARY = 2;
+//    
+//    this.METHOD_GET = 'GET';
+//    this.METHOD_POST = 'POST';
+//    
+//    this.SEND_AS_BINARY = 'BINARY';
+//    this.SEND_AS_RAW = 'RAW';
+//    
+//    this.TYPE_SYNC = 'sync';
+//    this.TYPE_ASYNC = 'async';
+//    
+//    this.CONTENT_TYPE_JSON = 'json';
+//    this.CONTENT_TYPE_QUERY = 'query';
+//    this.CONTENT_TYPE_FORM = 'form';
+//    
+//    this.CHARSET_UTF8 = 'UTF-8';
     
     this.getUrl = function () { };
     this.setUrl = function (val) { };
     
-    this.encodeContent = function (contentType) {};
     this.getContent = function () { };
     this.setContent = function (val) { };
     
@@ -42,83 +58,29 @@ C.Http.Request = function (settings) {
 C.Http.Request.prototype = new C.Enviroment.Object();
 C.Http.Request.prototype.constructor = C.Http.Request;
 
-C.Http.Request.MODE_TEXT = 1;
-C.Http.Request.MODE_BINARY = 2;
+C.Http.Request.prototype.MODE_TEXT = 1;
+C.Http.Request.prototype.MODE_BINARY = 2;
     
-C.Http.Request.METHOD_GET = 'GET';
-C.Http.Request.METHOD_POST = 'POST';
+C.Http.Request.prototype.METHOD_GET = 'GET';
+C.Http.Request.prototype.METHOD_POST = 'POST';
     
-C.Http.Request.SEND_AS_BINARY = 'BINARY';
-C.Http.Request.SEND_AS_RAW = 'RAW';
+C.Http.Request.prototype.SEND_AS_BINARY = 'BINARY';
+C.Http.Request.prototype.SEND_AS_RAW = 'RAW';
     
-C.Http.Request.TYPE_SYNC = 'sync';
-C.Http.Request.TYPE_ASYNC = 'async';
+C.Http.Request.prototype.TYPE_SYNC = 'sync';
+C.Http.Request.prototype.TYPE_ASYNC = 'async';
     
-C.Http.Request.CONTENT_TYPE_JSON = 'json';
-C.Http.Request.CONTENT_TYPE_QUERY = 'query';
-C.Http.Request.CONTENT_TYPE_FORM = 'form';
-    
-C.Http.Request.CHARSET_UTF8 = 'UTF-8';
+C.Http.Request.prototype.CHARSET_UTF8 = 'UTF-8';
 
-C.mode(C.Http.Request, [
+C.mode(C.Http.Request.prototype, [
     "MODE_TEXT", "MODE_BINARY", 
     "METHOD_GET", "METHOD_POST",
     "SEND_AS_BINARY", "SEND_AS_RAW",
     "TYPE_SYNC", "TYPE_SYNC",
-    "CONTENT_TYPE_JSON", "CONTENT_TYPE_JSON", "CONTENT_TYPE_FORM",
     "CHARSET_UTF8"
 ], C.MODE_LOCKED);
 
 C.factory(C.Http, 'Request', function () {
-    var pack = {
-        multipartFormData : function (data, key, level, boundary) {
-            var boundary = C.isDefined(boundary) ? boundary : C.guid(4);
-                level = C.isDefined(level) ? level : 1;
-            var content = '';
-            var self = this;
-            
-            C.traverse(data, function (dataKey, dataValue) {
-                var finalKey = (C.isDefined(key) && key != null)
-                            ? key + '[' + dataKey + ']'
-                            : dataKey;
-                            
-                content += (C.isObject(dataValue) || C.isArray(dataValue))
-                        ? self.multipartFormData(dataValue, finalKey, level + 1, boundary)
-                        : "--"  + boundary
-                                + "\r\nContent-Disposition: form-data; name=" + finalKey
-                                + "\r\nContent-type: application/octet-stream"
-                                + "\r\n\r\n" + dataValue + "\r\n";
-                
-            });
-            
-            if (level == 1) {
-                content += "--"+boundary+"--\r\n";
-            }
-            
-            return content;
-        },
-        xWwwFormUrlEncoded: function (data, key, level) {
-            level = C.isDefined(level) ? level : 1;
-            
-            var query = '';
-            var self = this;
-            
-            C.traverse(data, function (dataKey, dataValue) {
-                var finalKey = (C.isDefined(key) && key != null)
-                            ? key + '[' + dataKey + ']'
-                            : dataKey;
-                            
-                query += (C.isObject(dataValue) || C.isArray(dataValue))
-                      ? self.xWwwFormUrlEncoded(dataValue, finalKey, level + 1)
-                      : (level === 1 && query.length === 0 ? '' : "&") + encodeURIComponent(finalKey) + '=' + encodeURIComponent(dataValue);
-            });
-            
-            return query;
-        },
-        applicationJson: function (data) {
-            return JSON.stringify(data);
-        }
-    };
     
     var __constructor = function (settings) {
     /* Variables */
@@ -141,24 +103,6 @@ C.factory(C.Http, 'Request', function () {
     /* Implementation */
         this.getUrl = function () { return url; };
         this.setUrl = function (val) { url = val; return this; };
-        
-        this.encodeContent = function (contentType) {
-            switch (contentType) {
-                case self.CONTENT_TYPE_FORM:
-                    return pack.multipartFormData(this.data());
-                    break;
-                case self.CONTENT_TYPE_QUERY:
-                    return pack.xWwwFormUrlEncoded(this.data());
-                    break;
-                case self.CONTENT_TYPE_JSON:
-                    return pack.applicationJson(this.data());
-                    break;
-                default:
-                    break;
-            }
-            
-            return null;
-        };
         
         this.getContent = function () {
             return content;
@@ -255,6 +199,8 @@ C.factory(C.Http, 'Request', function () {
                 }
             });
         }
+        
+        C.mode(this, [ "onResponse" ], C.MODE_LOCKED);
     };
     
     __constructor.prototype = new C.Http.Request();

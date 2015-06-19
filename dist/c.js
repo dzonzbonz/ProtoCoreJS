@@ -1,7 +1,7 @@
 /** @license
  * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
  * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
- * v0.0.1 (2015/06/19 09:34)
+ * v0.0.1 (2015/06/19 13:55)
  */
 
 (function () {
@@ -71,6 +71,18 @@ CJS.prototype = {
     },
     isDefined: function (variableToCheck, undefinedValue) {
         return !(variableToCheck === undefinedValue);
+    },
+    isEmpty: function (variableToCheck) {
+        if (this.isString(variableToCheck)) {
+            return variableToCheck.length;
+        }
+        if (this.isArray(variableToCheck)) {
+            return variableToCheck.length;
+        }
+        if (!isNaN(variableToCheck)) {
+            return variableToCheck !== 0;
+        }
+        return true;
     },
     descriptor: function (obj, property) {
         var _ret = null;

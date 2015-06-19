@@ -1,7 +1,7 @@
 /**
  * @requires protocor.collection.base
  */
-protocor.require('protocor.collection.base');
+//protocor.require('protocor.collection.base');
 
 /**
  * @constructor

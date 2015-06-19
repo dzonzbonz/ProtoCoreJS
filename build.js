@@ -34,6 +34,8 @@ var buildConfig = {
             'min_name': 'c.http.min.js'
         },
         'deploy': {
+            DATA_JS          : '/data.js',
+            URI_JS          : '/uri.js',
             REQUEST_JS          : '/request.js',
             RESPONSE_JS      : '/response.js',
             CLIENT_JS           : '/client.js'

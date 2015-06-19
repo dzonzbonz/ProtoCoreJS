@@ -11,9 +11,19 @@
         <!--<script type="text/javascript" src="../dist/thread.js"></script>-->
         <script type="text/javascript" language="javascript">
             function httpRequest() {
+
+                var uriCustom = new C.Http.Uri('http://icard.api:8142/digital-loyalty-card/icard-horisen/customer/1?sample[0][name]=texčćžđšt&sample[0][email]=text&sample[1][name]=text&sample[1][email]=text#apiCall');
+                    console.log(uriCustom.toJSON());
+                    console.log(uriCustom.build());
+                    
+                var uriLocation = new C.Http.Uri(location.href);
+                    console.log(uriLocation.toJSON());
+                    console.log(uriLocation.build());
+                    
                 var customerGET = new C.Http.Request();
                 customerGET.setUrl('http://icard.api/digital-loyalty-card/icard-horisen/customer/1');
-                customerGET.setMethod(customerGET.METHOD_GET);
+                
+                customerGET.setMethod(C.Http.Request.prototype.METHOD_GET);
                 customerGET.setHeader('Content-Type: application/json');
                 
                 customerGET.onResponse.subscribe(

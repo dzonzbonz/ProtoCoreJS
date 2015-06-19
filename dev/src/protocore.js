@@ -64,6 +64,18 @@ CJS.prototype = {
     isDefined: function (variableToCheck, undefinedValue) {
         return !(variableToCheck === undefinedValue);
     },
+    isEmpty: function (variableToCheck) {
+        if (this.isString(variableToCheck)) {
+            return variableToCheck.length;
+        }
+        if (this.isArray(variableToCheck)) {
+            return variableToCheck.length;
+        }
+        if (!isNaN(variableToCheck)) {
+            return variableToCheck !== 0;
+        }
+        return true;
+    },
     descriptor: function (obj, property) {
         var _ret = null;
         if (obj.hasProperty && obj.hasProperty(property)) {

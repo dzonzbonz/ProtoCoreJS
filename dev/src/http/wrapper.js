@@ -2,6 +2,8 @@
 (function () {
 var factory = function (C) {
     C.Http = {};
+//::DATA_JS:://
+//::URI_JS:://
 //::RESPONSE_JS:://
 //::REQUEST_JS:://
 //::CLIENT_JS:://
