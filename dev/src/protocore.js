@@ -90,6 +90,9 @@ CJS.prototype = {
     flaged: function (val, flag) {
         return ((val & flag) == flag);
     },
+    ifDefined: function (arg, val) {
+        return C.isDefined(arg) ? arg : val;
+    },
     /**
      * 
      * @param {Object} obj
@@ -505,5 +508,5 @@ C.mode(C, [
     'fork', 'join', 'queue',
     'guid',
     'isFlaged', 'isFunction', 'isObject', 'isArray', 'isDefined', 'isString',
-    'load'
+    'ifDefined', 'load'
 ], C.MODE_LOCKED);
