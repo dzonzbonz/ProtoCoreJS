@@ -1,12 +1,15 @@
 /** @license
  * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
  * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
- * v0.0.1 (2015/06/19 13:55)
+ * v0.0.1 (2015/06/23 14:26)
  */
 
 (function () {
 var factory = function (C) {
-    C.Http = {};
+    C.Http = {
+        namespace: 'C.Http'
+    };
+    C.mode(C.Http, 'namespace', C.MODE_LOCKED);
 /**
  * @constructor
  * @param {String} filename
@@ -279,7 +282,8 @@ C.factory(C.Http, 'Uri', function () {
 
         }
     };
-    var __constructor = function (uriToParse) {
+    
+    function /**C.Http.Uri**/ C_Http_Uri(uriToParse) {
         /* Variables */
         var uriProtocol = '';
         var uriHostName = '';
@@ -331,10 +335,10 @@ C.factory(C.Http, 'Uri', function () {
         }
     };
 
-    __constructor.prototype = new C.Http.Uri();
-    __constructor.prototype.constructor = C.Http.Uri;
+    C_Http_Uri.prototype = new C.Http.Uri();
+    C_Http_Uri.prototype.constructor = C.Http.Uri;
 
-    return __constructor;
+    return C_Http_Uri;
 });
 /**
  * 

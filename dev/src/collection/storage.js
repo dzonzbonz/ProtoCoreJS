@@ -1,16 +1,15 @@
-protocor.require('protocor.collection.array');
 /**
  * @constructor
- * @extends {protocor.collection.array}
+ * @extends {C.Collection.Array}
  */
-protocor.collection.storage = function () {
+C.Collection.Storage = function () {
     var _data = null,
             _uri = '',
             _parent = null;
 
     /* Inheritance */
-    var parent = new protocor.collection.array();
-    protocor.extend(this, parent, 'protocor.collection.storage', 'protocor.collection.array');
+    var parent = new C.Collection.Array();
+    C.extend(this, parent, 'C.Collection.Storage', 'C.Collection.Array');
 
     /**
      * @param {string} uri
@@ -21,11 +20,11 @@ protocor.collection.storage = function () {
             return uri;
         }
 
-        if (typeof (uri) == 'undefined') {
+        if (!C.isDefined(uri)) {
             uri = '/';
         }
 
-        if (typeof (uri) != 'string') {
+        if (!C.isString(uri)) {
             throw 'Invalid uri value';
         }
 
@@ -61,7 +60,7 @@ protocor.collection.storage = function () {
                 var _set = parent.isset.call(this, _key);
                 var _storage = null;
 
-                if (!_set || !(parent.get.call(this, _key) instanceof protocor.collection.storage)) {
+                if (!_set || !(parent.get.call(this, _key) instanceof C.Collection.Storage)) {
                     _storage = protocor.create(protocor.type(this));
                     parent.set.call(this, _key, _storage);
                 }
@@ -86,7 +85,7 @@ protocor.collection.storage = function () {
             } else {
                 var _set = parent.isset.call(this, _key);
 
-                if (!_set || !(parent.get.call(this, _key) instanceof protocor.collection.storage)) {
+                if (!_set || !(parent.get.call(this, _key) instanceof C.Collection.Storage)) {
                     throw 'Storage path does not exist';
                 }
 
@@ -108,7 +107,7 @@ protocor.collection.storage = function () {
             _isset = parent.isset.call(this, _key);
 
             if (_uri.length > 0) {
-                if (_isset && (parent.get.call(this, _key) instanceof protocor.collection.storage)) {
+                if (_isset && (parent.get.call(this, _key) instanceof C.Collection.Storage)) {
                     _isset = parent.get.call(this, _key).isset(_uri);
                 }
             }
@@ -153,7 +152,7 @@ protocor.collection.storage = function () {
     };
 
 };
-protocor.collection.storage.prototype = new protocor.collection.array();
-protocor.collection.storage.prototype.constructor = protocor.collection.storage;
-protocor.register('protocor.collection.storage', protocor.collection.storage);
-protocor.mode(protocor.collection, 'storage', protocor.MODE_LOCKED);
+
+C.Collection.Storage.prototype = new C.Collection.Array();
+C.Collection.Storage.prototype.constructor = C.Collection.Storage;
+C.mode(C.Collection, 'Storage', C.MODE_LOCKED);

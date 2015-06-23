@@ -1,14 +1,12 @@
 //::LICENSE:://
 (function () {
 var factory = function (C) {
-    C.Http = {};
-    C.namespace(C.Http, 'C.Http');
-//::DATA_JS:://
-//::URI_JS:://
-//::RESPONSE_JS:://
-//::REQUEST_JS:://
-//::CLIENT_JS:://
-    return C.Http;
+    C.Storage = {};
+    C.namespace(C.Storage, 'C.Storage');
+//::BASE_JS:://
+//::ARRAY_JS:://
+//::STORAGE_JS:://
+    return C.Storage;
 };
 
 if (typeof define === 'function' && define.amd) {
@@ -17,7 +15,7 @@ if (typeof define === 'function' && define.amd) {
     module.exports = factory(require());
 } else {
     /*jshint sub:true */
-    window['C.Http'] = factory(C);
+    window['C.Collection'] = factory(C);
 }
 
 }());

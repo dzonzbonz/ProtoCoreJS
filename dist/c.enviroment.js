@@ -1,12 +1,16 @@
 /** @license
  * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
  * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
- * v0.0.1 (2015/06/19 13:55)
+ * v0.0.1 (2015/06/23 14:26)
  */
 
 (function () {
 var factory = function (C) {
-    C.Enviroment = {};
+    C.Enviroment = {
+        namespace: 'C.Enviroment'
+    };
+    C.mode(C.Enviroment, 'namespace', C.MODE_LOCKED);
+    
 /**
  * 
  * @constructor
@@ -26,7 +30,8 @@ C.Enviroment.Object = function () {
 };
 
 C.factory(C.Enviroment, 'Object', function () {
-    var __constructor = function () {
+    
+    function C__Enviroment__Object() {
         var objectGUID = C.guid(4);
         var objectData = {};
         
@@ -98,10 +103,12 @@ C.factory(C.Enviroment, 'Object', function () {
         
     };
     
-    __constructor.prototype = new C.Enviroment.Object();
-    __constructor.prototype.constructor = C.Enviroment.Object;
+    C__Enviroment__Object.prototype = new C.Enviroment.Object();
+    C__Enviroment__Object.prototype.constructor = C.Enviroment.Object;
     
-    return __constructor;
+//    C.constructable(C__Enviroment__Object);
+    
+    return C__Enviroment__Object;
 }, C.MODE_LOCKED);
 /**
  * @constructor

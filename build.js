@@ -8,7 +8,7 @@ var buildConfig = {
             'min_name': 'c.min.js'
         },
         'deploy': {
-            PROTOCORE_JS        : '/protocore.js'
+            PROTOCORE_JS       : '/protocore.js'
         }
     },
     'enviroment': {
@@ -24,6 +24,19 @@ var buildConfig = {
             EVENT_JS           : '/event.js',
             LOADER_JS          : '/loader.js',
             TASK_JS            : '/task.js'
+        }
+    },
+    'collection': {
+        'src': 'dev/src/collection',
+        'dist': {
+            'dir': 'dist',
+            'name': 'c.collection.js',
+            'min_name': 'c.collection.min.js'
+        },
+        'deploy': {
+            BASE_JS            : '/base.js',
+            ARRAY_JS           : '/array.js',
+            STORAGE_JS         : '/storage.js'
         }
     },
     'http': {

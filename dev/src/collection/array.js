@@ -1,7 +1,7 @@
 /**
- * @requires protocor.collection.base
+ * @requires protocor.Collection.Base
  */
-//protocor.require('protocor.collection.base');
+//protocor.require('protocor.Collection.Base');
 
 /**
  * @constructor
@@ -96,7 +96,6 @@ C.Collection.Array = function () {
         return this;
     };
 };
-protocor.collection.array.prototype = new protocor.collection.base();
-protocor.collection.array.prototype.constructor = protocor.collection.array;
-protocor.register('protocor.collection.array', protocor.collection.array);
-protocor.mode(protocor.collection, 'array', protocor.MODE_LOCKED);
+C.Collection.Array.prototype = new C.Collection.Base();
+C.Collection.Array.prototype.constructor = C.Collection.Array;
+C.mode(C.Collection, 'array', C.MODE_LOCKED);

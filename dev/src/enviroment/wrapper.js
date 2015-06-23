@@ -2,6 +2,8 @@
 (function () {
 var factory = function (C) {
     C.Enviroment = {};
+    C.namespace(C.Enviroment, 'C.Enviroment');
+    
 //::OBJECT_JS:://
 //::EVENT_DATA_JS:://
 //::EVENT_JS:://

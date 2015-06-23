@@ -1,7 +1,7 @@
 /** @license
  * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
  * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
- * v0.0.1 (2015/06/19 13:55)
+ * v0.0.1 (2015/06/23 14:26)
  */
 
 (function () {
@@ -24,6 +24,8 @@ function CJS() {
 
 }
 
+var _registry = {};
+
 CJS.prototype = {
     /**
      * Generates unique ID
@@ -45,6 +47,9 @@ CJS.prototype = {
     isFunction: function (functionToCheck) {
         var getType = {};
         return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
+    },
+    isNamespace: function (namespaceToCheck) {
+        return C.isObject(namespaceToCheck) && C.isDefined(namespaceToCheck.namespace);
     },
     isCallable: function (callable) {
 
@@ -97,6 +102,9 @@ CJS.prototype = {
     },
     flaged: function (val, flag) {
         return ((val & flag) == flag);
+    },
+    ifDefined: function (arg, val) {
+        return C.isDefined(arg) ? arg : val;
     },
     /**
      * 
@@ -178,6 +186,13 @@ CJS.prototype = {
             }
         }
     },
+    namespace: function (obj, namespaceName) {
+        
+        if (C.isObject(obj) && !C.isDefined(obj.namespace)) {
+            C.implement(obj, 'namespace', namespaceName, C.MODE_LOCKED);
+        };
+        
+    },
     /**
      * Implement methods using module pattern
      * 
@@ -212,10 +227,54 @@ CJS.prototype = {
             // single factory
             var factoryImplementation = factory.apply(instance);
 
-            if (factoryImplementation && this.isString(method) && this.isFunction(factory)) {
+            if (factoryImplementation 
+                && this.isString(method) 
+//                && this.isFunction(factory)
+            ) {
             // implement factory result as method
                 this.implement(instance, method, factoryImplementation, mode);
+                if (this.isNamespace(instance) 
+                    && this.isFunction(factoryImplementation)
+                ) {
+                    C.constructable(factoryImplementation, instance.namespace + '.' + method);
+                }
             }
+        }
+    },
+    /**
+     * 
+     * @param {type} obj
+     * @returns {ProtoCoreInterface.serialize._ret}
+     */
+    serialize: function (obj) {
+        var _ret = obj;
+        
+        if (C.isDefined(obj.serialize)) {
+            _ret = {
+                'instance': this.instanceOf(obj),
+                'serialized': obj.serialize()
+            };
+        } else if (C.isObject(obj) || C.isArray(obj)) {
+            for (var _field in obj) {
+                _ret[_field] = this.serialize(obj[_field]);
+            }
+        }
+
+        return _ret;
+    },
+
+    /**
+     * 
+     * @param {type} serialized
+     * @returns {ProtoCoreInterface.unserialize.obj}
+     */
+    unserialize: function (serialized) {
+        if (typeof (serialized['__instanceof__']) != 'undefined') {
+            var obj = this.instantiate(serialized['__instanceof__']);
+            obj.unserialize(serialized['__serialized__']);
+            return obj;
+        } else {
+            return serialized;
         }
     },
     /**
@@ -227,6 +286,23 @@ CJS.prototype = {
         var obj = null;
         eval('obj = new ' + className + '();');
         return obj;
+    },
+    constructable: function (constructable, constructableName) {
+        var constructorName = constructableName;
+        if (!this.isDefined(constructableName)) {
+            constructorName = constructable.name.replace('__', '.');
+        }
+        
+        _registry[constructorName] = constructable;
+        constructable.prototype.constructor.instanceOf = constructorName;
+    },
+    constructorOf: function (constructorName) {
+        return _registry[constructorName];
+    },
+    instanceOf: function (instance) {
+        var constructorName = instance.constructor.instanceOf;
+        return constructorName;
+        
     },
     call: function (callable, callee) {
         var ret = null;
@@ -513,7 +589,7 @@ C.mode(C, [
     'fork', 'join', 'queue',
     'guid',
     'isFlaged', 'isFunction', 'isObject', 'isArray', 'isDefined', 'isString',
-    'load'
+    'ifDefined', 'load'
 ], C.MODE_LOCKED);
     return C;
 };
