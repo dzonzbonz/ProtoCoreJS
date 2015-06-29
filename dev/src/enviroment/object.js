@@ -88,6 +88,13 @@ C.factory(C.Enviroment, 'Object', function () {
             };
         };
         
+        this.toJSAN = function () {
+            return [
+                objectGUID,
+                C.serialize(objectData)
+            ];
+        };
+        
     };
     
     C__Enviroment__Object.prototype = new C.Enviroment.Object();

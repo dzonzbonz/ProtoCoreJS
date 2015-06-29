@@ -85,7 +85,7 @@ function purgeDeploy(distPath, distMinPath) {
             _fs.unlinkSync(filePath);
         }
     });
-    console.log(' purged deploy.');
+//    console.log(' purged deploy.');
 }
 
 

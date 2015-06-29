@@ -6,10 +6,33 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script type="text/javascript" src="../dist/c.js"></script>
         <script type="text/javascript" src="../dist/c.enviroment.js"></script>
+        <script type="text/javascript" src="../dist/c.collection.js"></script>
         <script type="text/javascript" src="../dist/c.http.js"></script>
         <script type="text/javascript" src="../node_modules/zepto-full/zepto.js"></script>
         <!--<script type="text/javascript" src="../dist/thread.js"></script>-->
         <script type="text/javascript" language="javascript">            
+            
+            function testArray() {
+                var array1 = new C.Collection.Array();
+                    array1.set('4', 'Some Value 1');
+                    array1.set('1', 'Some Value 1');
+                    array1.set('6', 'Some Value 1');
+                    array1.set('3', 'Some Value 1');
+                    array1.set('2', 'Some Value 1');
+                    array1.set('8', 'Some Value 1');
+                    
+                var array2 = new C.Collection.Array();
+                    array2.set('40', 'Some Value 1');
+                    array2.set('10', 'Some Value 1');
+                    array2.set('60', 'Some Value 1');
+                    array2.set('30', 'Some Value 1');
+                    array2.set('20', 'Some Value 1');
+                    array2.set('80', 'Some Value 1');
+                    
+                    $('#array1').html(JSON.stringify(array1.toJSAN()));
+                    array1.sort();
+                    $('#array2').html(JSON.stringify(array1.toJSAN()));
+            }
             
             function httpRequest() {
 
@@ -180,6 +203,12 @@
         <h3>Object Data</h3>
         <div id="objectDataSet"></div>
         <div id="objectDataGet"></div>
+        <h3>Collection Array</h3>
+        <div id="array1"></div>
+        <div id="array2"></div>
+        <div id="array3"></div>
+        <div id="array4"></div>
+        <button type="button" onclick="testArray();">Test</button>
         <h3>Event Data</h3>
         <div id="eventDataSet"></div>
         <div id="eventDataGet"></div>

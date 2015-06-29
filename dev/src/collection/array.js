@@ -98,4 +98,5 @@ C.Collection.Array = function () {
 };
 C.Collection.Array.prototype = new C.Collection.Base();
 C.Collection.Array.prototype.constructor = C.Collection.Array;
-C.mode(C.Collection, 'array', C.MODE_LOCKED);
+C.mode(C.Collection, 'Array', C.MODE_LOCKED);
+C.constructable(C.Collection.Array, 'C.Collection.Array');

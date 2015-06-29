@@ -1,15 +1,13 @@
 /** @license
  * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
  * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
- * v0.0.1 (2015/06/23 14:26)
+ * v0.0.1 (2015/06/29 11:50)
  */
 
 (function () {
 var factory = function (C) {
-    C.Http = {
-        namespace: 'C.Http'
-    };
-    C.mode(C.Http, 'namespace', C.MODE_LOCKED);
+    C.Http = {};
+    C.namespace(C.Http, 'C.Http');
 /**
  * @constructor
  * @param {String} filename

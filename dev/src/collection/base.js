@@ -351,27 +351,102 @@ C.Collection.Base = function () {
 
         return this;
     };
+    
+    function _comparableCollection(from) {
+        switch (from) {
+            case 'key':
+                return _keys;
+                break;
+            case 'value':
+                return _vals;
+                break;
+        }
+    };
+    
+    var COMPARE_LT = 'LT',
+        COMPARE_LTE = 'LTE',
+        COMPARE_EQ = 'EQ',
+        COMPARE_GTE = 'GTE',
+        COMPARE_GT = 'GT';
+    
+    function _comparableString(a, b, type) {
+        switch (type) {
+            case COMPARE_LT:
+                return a < b;
+                break;
+            case COMPARE_LTE:
+                return a <= b;
+                break;
+            case COMPARE_EQ:
+                return a == b;
+                break;
+            case COMPARE_GTE:
+                return a >= b;
+                break;
+            case COMPARE_GT:
+                return a > b;
+                break;
+        }
+    };
+    
+    function _comparableNumber(a, b, type) {
+        switch (type) {
+            case COMPARE_LT:
+                return a < b;
+                break;
+            case COMPARE_LTE:
+                return a <= b;
+                break;
+            case COMPARE_EQ:
+                return a == b;
+                break;
+            case COMPARE_GTE:
+                return a >= b;
+                break;
+            case COMPARE_GT:
+                return a > b;
+                break;
+        }
+    };
+    
+    function _comparableDate(a, b, type) {
+        
+    };
+    
     /**
      * Sort items
      */
-    this.sort = function (order) {
+    this.sort = function (order, by, comparer) {
         order = C.ifDefined(order, 'asc');
+        by = C.ifDefined(by, 'key');
+        
+        if (!C.isDefined(comparer)) {
+            comparer = _comparableString;
+        } else if (C.isString(comparer)) {
+            
+        }
+        
+        comparer = C.ifDefined(comparer, _comparableString);
 
 //		var _iterations = 0;
         var _order = order == 'asc' ? 1 : -1;
+        var _by = by;
+        
+        var _collection = _comparableCollection(_by);
+        
         if (this.count() > 1) {
-            var _lowerValue = _keys[_keys.length - 1],
-                _lowerPointer = _keys.length - 1,
-                _upperValue = _keys[_keys.length - 1],
-                _upperPointer = _keys.length - 1,
+            var _lowerValue = _collection[_collection.length - 1],
+                _lowerPointer = _collection.length - 1,
+                _upperValue = _collection[_collection.length - 1],
+                _upperPointer = _collection.length - 1,
                 _lastPointer = _upperPointer,
                 _lastValue = _upperValue,
                 _newPointer = _upperPointer,
-                _count = _keys.length;
+                _count = _collection.length;
 
             for (var _index = 0; _index < _count - 1; _index++) {
 
-                var _value = _keys[0];
+                var _value = _collection[0];
 
 //              _iterations++;
 
@@ -415,7 +490,7 @@ C.Collection.Base = function () {
 //						if (_iterations > 50) break;
 
                         _pivotPointer = ((_lowerBound + _upperBound) >> 1);
-                        _pivotValue = _keys[_pivotPointer];
+                        _pivotValue = _collection[_pivotPointer];
                         _pivotDiff = _value === _pivotValue ? 0 : (_value > _pivotValue ? 1 : -1);
                         _pivotOrder = _order * _pivotDiff;
 
@@ -541,17 +616,17 @@ C.Collection.Base = function () {
     };
 
     this.toJSAN = function () {
-        var _ret = parent.toJSON.call(this);
-
+        var _ret = parent.toJSAN.call(this);
+            _ret[2] = [];
         for (var _index in _keys) {
             var v = _vals[_index];
             if (v instanceof C.Enviroment.Object) {
-                _ret.push({
+                _ret[2].push({
                     key: _keys[_index],
                     val: v.toJSON()
                 });
             } else {
-                _ret.push({
+                _ret[2].push({
                     key: _keys[_index],
                     val: v
                 });
@@ -564,10 +639,10 @@ C.Collection.Base = function () {
         var serialized = parent.serialize.call(this);
         serialized['unique'] = _unique;
         serialized['collection'] = {};
-
-        for (var _index in _keys) {
-            serialized['collection'][_keys[_index]] = C.serialize(_vals[_index]);
-        }
+        
+        C.traverse(_keys, function (_index, _key) {
+            serialized['collection'][_key] = C.serialize(_vals[_index]);
+        });
 
         return serialized;
     };
@@ -583,16 +658,18 @@ C.Collection.Base = function () {
         }
 
         if (serialized['collection']) {
-            for (var key in serialized['collection']) {
-                var value = serialized['collection'][key];
-                this.queue(key, C.unserialize(value));
-            }
+            C.traverse(serialized['collection'], function (key, value) {
+                self.queue(key, C.unserialize(value));
+            });
         }
 
         return this;
     };
+    
+    var self = this;
 };
 
 C.Collection.Base.prototype = new C.Enviroment.Object();
 C.Collection.Base.prototype.constructor = C.Collection.Base;
 C.mode(C.Collection, 'Base', C.MODE_LOCKED);
+C.constructable(C.Collection.Base, 'C.Collection.Base');

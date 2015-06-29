@@ -1,8 +1,8 @@
 //::LICENSE:://
 (function () {
 var factory = function (C) {
-    C.Storage = {};
-    C.namespace(C.Storage, 'C.Storage');
+    C.Collection = {};
+    C.namespace(C.Collection, 'C.Collection');
 //::BASE_JS:://
 //::ARRAY_JS:://
 //::STORAGE_JS:://

@@ -156,3 +156,4 @@ C.Collection.Storage = function () {
 C.Collection.Storage.prototype = new C.Collection.Array();
 C.Collection.Storage.prototype.constructor = C.Collection.Storage;
 C.mode(C.Collection, 'Storage', C.MODE_LOCKED);
+C.constructable(C.Collection.Storage, 'C.Collection.Storage');

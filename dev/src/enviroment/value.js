@@ -74,3 +74,4 @@ C.Enviroment.Value = function (initialValue) {
 C.Enviroment.Value.prototype = new C.Enviroment.Object();
 C.Enviroment.Value.prototype.constructor = C.Enviroment.Object;
 C.mode(C.Enviroment, 'Value', C.MODE_LOCKED);
+C.constructable(C.Enviroment.Value, 'C.Enviroment.Value');

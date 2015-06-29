@@ -1,15 +1,13 @@
 /** @license
  * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
  * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
- * v0.0.1 (2015/06/23 14:26)
+ * v0.0.1 (2015/06/29 11:50)
  */
 
 (function () {
 var factory = function (C) {
-    C.Storage = {
-        namespace: 'C.Storage'
-    };
-    C.mode(C.Storage, 'namespace', C.MODE_LOCKED);
+    C.Collection = {};
+    C.namespace(C.Collection, 'C.Collection');
 /**
  * @extends C.Enviroment.Object
  * @returns {C.Collection.Base}
@@ -553,17 +551,17 @@ C.Collection.Base = function () {
     };
 
     this.toJSAN = function () {
-        var _ret = parent.toJSON.call(this);
-
+        var _ret = parent.toJSAN.call(this);
+            _ret[2] = [];
         for (var _index in _keys) {
             var v = _vals[_index];
             if (v instanceof C.Enviroment.Object) {
-                _ret.push({
+                _ret[2].push({
                     key: _keys[_index],
                     val: v.toJSON()
                 });
             } else {
-                _ret.push({
+                _ret[2].push({
                     key: _keys[_index],
                     val: v
                 });
@@ -576,10 +574,10 @@ C.Collection.Base = function () {
         var serialized = parent.serialize.call(this);
         serialized['unique'] = _unique;
         serialized['collection'] = {};
-
-        for (var _index in _keys) {
-            serialized['collection'][_keys[_index]] = C.serialize(_vals[_index]);
-        }
+        
+        C.traverse(_keys, function (_index, _key) {
+            serialized['collection'][_key] = C.serialize(_vals[_index]);
+        });
 
         return serialized;
     };
@@ -595,19 +593,21 @@ C.Collection.Base = function () {
         }
 
         if (serialized['collection']) {
-            for (var key in serialized['collection']) {
-                var value = serialized['collection'][key];
-                this.queue(key, C.unserialize(value));
-            }
+            C.traverse(serialized['collection'], function (key, value) {
+                self.queue(key, C.unserialize(value));
+            });
         }
 
         return this;
     };
+    
+    var self = this;
 };
 
 C.Collection.Base.prototype = new C.Enviroment.Object();
 C.Collection.Base.prototype.constructor = C.Collection.Base;
 C.mode(C.Collection, 'Base', C.MODE_LOCKED);
+C.constructable(C.Collection.Base, 'C.Collection.Base');
 /**
  * @requires protocor.Collection.Base
  */
@@ -708,7 +708,8 @@ C.Collection.Array = function () {
 };
 C.Collection.Array.prototype = new C.Collection.Base();
 C.Collection.Array.prototype.constructor = C.Collection.Array;
-C.mode(C.Collection, 'array', C.MODE_LOCKED);
+C.mode(C.Collection, 'Array', C.MODE_LOCKED);
+C.constructable(C.Collection.Array, 'C.Collection.Array');
 /**
  * @constructor
  * @extends {C.Collection.Array}
@@ -867,6 +868,7 @@ C.Collection.Storage = function () {
 C.Collection.Storage.prototype = new C.Collection.Array();
 C.Collection.Storage.prototype.constructor = C.Collection.Storage;
 C.mode(C.Collection, 'Storage', C.MODE_LOCKED);
+C.constructable(C.Collection.Storage, 'C.Collection.Storage');
     return C.Storage;
 };
 

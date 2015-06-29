@@ -8,6 +8,7 @@ function CJS() {
      * PUBLIC PROPERTIES 
      */
     this.VERSION = '::VERSION_NUMBER::';
+    this.NAMESPACE = 'C';
 
     this.MODE_READONLY = 1;
     this.MODE_LOCKED = 2;
@@ -41,7 +42,7 @@ CJS.prototype = {
         return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
     },
     isNamespace: function (namespaceToCheck) {
-        return C.isObject(namespaceToCheck) && C.isDefined(namespaceToCheck.namespace);
+        return C.isObject(namespaceToCheck) && C.isDefined(namespaceToCheck.NAMESPACE);
     },
     isCallable: function (callable) {
 
@@ -180,8 +181,8 @@ CJS.prototype = {
     },
     namespace: function (obj, namespaceName) {
         
-        if (C.isObject(obj) && !C.isDefined(obj.namespace)) {
-            C.implement(obj, 'namespace', namespaceName, C.MODE_LOCKED);
+        if (C.isObject(obj) && !C.isDefined(obj.NAMESPACE)) {
+            C.implement(obj, 'NAMESPACE', namespaceName, C.MODE_LOCKED);
         };
         
     },
@@ -228,7 +229,7 @@ CJS.prototype = {
                 if (this.isNamespace(instance) 
                     && this.isFunction(factoryImplementation)
                 ) {
-                    C.constructable(factoryImplementation, instance.namespace + '.' + method);
+                    this.constructable(factoryImplementation, instance.NAMESPACE + '.' + method);
                 }
             }
         }
@@ -261,9 +262,9 @@ CJS.prototype = {
      * @returns {ProtoCoreInterface.unserialize.obj}
      */
     unserialize: function (serialized) {
-        if (typeof (serialized['__instanceof__']) != 'undefined') {
-            var obj = this.instantiate(serialized['__instanceof__']);
-            obj.unserialize(serialized['__serialized__']);
+        if (!this.isDefined(serialized['instance'])) {
+            var obj = this.instantiate(serialized['instance']);
+            obj.unserialize(serialized['serialized']);
             return obj;
         } else {
             return serialized;
