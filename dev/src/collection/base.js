@@ -423,7 +423,17 @@ C.Collection.Base = function () {
         if (!C.isDefined(comparer)) {
             comparer = _comparableString;
         } else if (C.isString(comparer)) {
-            
+            switch (comparer) {
+                case 'string':
+                    comparer = _comparableString;
+                    break;
+                case 'number':
+                    comparer = _comparableNumber;
+                    break;
+                case 'date':
+                    comparer = _comparableDate;
+                    break;
+            }
         }
         
         comparer = C.ifDefined(comparer, _comparableString);
@@ -451,21 +461,23 @@ C.Collection.Base = function () {
 //              _iterations++;
 
                 if (_value >= _upperValue && _order > 0
-                        ||
-                        _value <= _upperValue && _order < 0)
-                {
+                    ||
+                    _value <= _upperValue && _order < 0
+                ) {
                     // MOVE TO THE SORTED END
                     _upperValue = _value;
                     _newPointer = _upperPointer;
-                } else if (
+                } 
+                else if (
                     _value <= _lowerValue && _order > 0
                     ||
-                    _value >= _lowerValue && _order < 0)
-                {
+                    _value >= _lowerValue && _order < 0
+                ) {
                     // MOVE TO THE SORTED BEGINING
                     _lowerValue = _value;
                     _newPointer = _lowerPointer - 1;
-                } else {
+                } 
+                else {
 //				} else if (_value > _lowerValue && _value < _upperValue) {
                     // MOVE TO THE SORTED PART VIA NEAR BINARY SEARCH
                     // WE ASSUME THAT BETWEEN LOWER AND UPPER BOUND EVERYTHING IS SORTED
@@ -476,11 +488,14 @@ C.Collection.Base = function () {
                         _pivotDiff = 0,
                         _pivotOrder = 0;
 
-                    if (_lastValue < _value && _order > 0 ||
-                            _lastValue > _value && _order < 0) {
+                    if (_lastValue < _value && _order > 0 
+                        ||
+                        _lastValue > _value && _order < 0
+                    ) {
                         // SET NEW LOWER BOUND
                         _lowerBound = _lastPointer;
-                    } else {
+                    } 
+                    else {
                         // SET NEW UPPER BOUND
                         _upperBound = _lastPointer;
                     }
@@ -501,7 +516,8 @@ C.Collection.Base = function () {
                         if (_pivotOrder > 0) {
                             // GO TO UPPER POINTER
                             _lowerBound = _pivotPointer;
-                        } else if (_pivotOrder < 0) {
+                        } 
+                        else if (_pivotOrder < 0) {
                             // GO TO LOWER POINTER
                             _upperBound = _pivotPointer;
                         }
