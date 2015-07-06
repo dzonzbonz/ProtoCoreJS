@@ -135,7 +135,7 @@ C.factory(C.Http.Client, function () {
             }
         }
         
-        C.traverse(r.getHeaders(), function (sendHeaderName, sendHeaderValue) {
+        C.each(r.getHeaders(), function (sendHeaderName, sendHeaderValue) {
             req.setRequestHeader(sendHeaderName, sendHeaderValue);
         });
         

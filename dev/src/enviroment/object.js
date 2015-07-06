@@ -88,12 +88,12 @@ C.factory(C.Enviroment, 'Object', function () {
             };
         };
         
-        this.toJSAN = function () {
-            return [
-                objectGUID,
-                C.serialize(objectData)
-            ];
-        };
+//        this.toJSAN = function () {
+//            return [
+//                ["guid", objectGUID],
+//                ["data", C.serialize(objectData)]
+//            ];
+//        };
         
     };
     

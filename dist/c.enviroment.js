@@ -1,7 +1,7 @@
 /** @license
  * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
  * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
- * v0.0.1 (2015/06/29 11:50)
+ * v0.0.1 (2015/07/06 14:50)
  */
 
 (function () {
@@ -99,12 +99,12 @@ C.factory(C.Enviroment, 'Object', function () {
             };
         };
         
-        this.toJSAN = function () {
-            return [
-                objectGUID,
-                C.serialize(objectData)
-            ];
-        };
+//        this.toJSAN = function () {
+//            return [
+//                ["guid", objectGUID],
+//                ["data", C.serialize(objectData)]
+//            ];
+//        };
         
     };
     

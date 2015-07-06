@@ -40,7 +40,7 @@ C.factory(C.Http, 'Header', function () {
             else {
                 var isArray = C.isArray(val);
             
-                C.traverse(val, function (sendHeaderName, sendHeaderValue) {
+                C.each(val, function (sendHeaderName, sendHeaderValue) {
                     if (isArray) {
                         self.setHeader(sendHeaderValue);
                     }

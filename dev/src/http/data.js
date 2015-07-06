@@ -119,7 +119,7 @@ C.factory(C.Http, 'Data', function () {
             var content = '';
             var self = this;
             
-            C.traverse(data, function (dataKey, dataValue) {
+            C.each(data, function (dataKey, dataValue) {
                 var finalKey = (C.isDefined(key) && key != null)
                             ? key + '[' + dataKey + ']'
                             : dataKey;
@@ -145,7 +145,7 @@ C.factory(C.Http, 'Data', function () {
             var query = '';
             var self = this;
             
-            C.traverse(data, function (dataKey, dataValue) {
+            C.each(data, function (dataKey, dataValue) {
                 var finalKey = (C.isDefined(key) && key != null)
                             ? key + '[' + dataKey + ']'
                             : dataKey;

@@ -1,7 +1,7 @@
 /** @license
  * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
  * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
- * v0.0.1 (2015/06/29 11:50)
+ * v0.0.1 (2015/07/06 14:50)
  */
 
 (function () {
@@ -129,7 +129,7 @@ CJS.prototype = {
                 var propertyIsObject = this.isObject(_property);
                 var propertyIsArray = this.isArray(_property);
 
-                this.traverse(_property, function (propertyIndexOrName, propertyModeOrName) {
+                this.each(_property, function (propertyIndexOrName, propertyModeOrName) {
                     if (propertyIsArray) {
                         C.mode(obj, _mode, propertyModeOrName);
                     }
@@ -169,7 +169,7 @@ CJS.prototype = {
         var self = this;
 
         if (this.isObject(method)) {
-            this.traverse(method, function (methodName, methodDefinition) {
+            this.each(method, function (methodName, methodDefinition) {
                 self.implement(instance, methodName, methodDefinition);
             });
         }
@@ -214,7 +214,7 @@ CJS.prototype = {
             var factoryIsObject = this.isObject(factory);
             var factoryIsArray = this.isArray(factory);
 
-            this.traverse(method, function (methodName, factoryDefinition) {
+            this.each(method, function (methodName, factoryDefinition) {
                 if (factoryIsObject) {
                     // we have a named method and a factory
                     self.factory(instance, factoryDefinition, methodName, mode);
@@ -301,7 +301,7 @@ CJS.prototype = {
         return _registry[constructorName];
     },
     instanceOf: function (instance) {
-        var constructorName = instance.constructor.instanceOf;
+        var constructorName = instance && instance.constructor ? instance.constructor.instanceOf : Object.prototype.toString.call(instance);
         return constructorName;
         
     },
@@ -324,20 +324,16 @@ CJS.prototype = {
      * @param {type} callback
      * @returns {Boolean}
      */
-    traverse: function (obj, callback) {
+    each: function (obj, callback) {
         if (!obj) {
             return false;
         }
 
-        if (obj.hasOwnProperty('traverse') && this.isFunction(obj.traverse)) {
-            return obj.traverse(callback);
-        } else {
-            var _ret = {};
-            for (var _index in obj) {
-                _ret[_index] = callback.apply(obj, [_index, obj[_index]]);
-            }
-            return _ret;
+        var _ret = {};
+        for (var _index in obj) {
+            _ret[_index] = callback.apply(obj, [_index, obj[_index]]);
         }
+        return _ret;
     },
     sleep: function (sleepDuration) {
         var now = new Date().getTime();
@@ -351,7 +347,7 @@ CJS.prototype = {
 
         if (this.isArray(callable)) {
             if (C.isArray(callable[0]) || C.isFunction(callable[0])) {
-                C.traverse(callable, function (cIndex, cValue) {
+                C.each(callable, function (cIndex, cValue) {
                     C.fork(cValue, timeout);
                 });
                 return;
@@ -400,7 +396,7 @@ CJS.prototype = {
             }
         }
 
-        this.traverse(callables, function (callableIndex, callableProperty) {
+        this.each(callables, function (callableIndex, callableProperty) {
             var joinJob = {};
 
             _callables[callableIndex] = false;
@@ -556,37 +552,38 @@ C.factory(C, 'extend', function (method) {
         }
 
         _wrap(objectInstance, parentInstance);
+        
+        if (parentInstance) {
+            C.each(parentInstance, function (parentMethod, methodDefinition) {
+                if (parentMethod === 'constructor' || parentMethod === '__instanceof__') {
+                    return;
+                }
 
-        C.traverse(parentInstance, function (parentMethod, methodDefinition) {
-            if (parentMethod === 'constructor' || parentMethod === '__instanceof__') {
-                return;
-            }
+                var methodMode = 0;
+                var desc = C.descriptor(parentInstance, parentMethod);
 
-            var methodMode = 0;
-            var desc = C.descriptor(parentInstance, parentMethod);
-            
-            if (!desc.writable) {
-                methodMode = methodMode | C.MODE_READONLY;
-            }
+                if (!desc.writable) {
+                    methodMode = methodMode | C.MODE_READONLY;
+                }
 
-            if (!desc.configurable) {
-                methodMode = methodMode | C.MODE_LOCKED;
-            }
+                if (!desc.configurable) {
+                    methodMode = methodMode | C.MODE_LOCKED;
+                }
 
-            if (!desc.enumerable) {
-                methodMode = methodMode | C.MODE_HIDDEN;
-            }
-
-            instance.implement(objectInstance, parentMethod, methodDefinition, methodMode);
-        });
-
+                if (!desc.enumerable) {
+                    methodMode = methodMode | C.MODE_HIDDEN;
+                }
+                
+                C.implement(objectInstance, parentMethod, methodDefinition, methodMode);
+            });
+        }
     };
 });
 
 C.mode(C, [
     "VERSION", "MODE_HIDDEN", "MODE_LOCKED", "MODE_PROPERTY", "MODE_READONLY",
     'implement', 'factory', 'mode', 'extend', 'include', 'serialize', 'unserialize',
-    'clone', 'cast', 'traverse', 'instantiate', 'descriptor',
+    'clone', 'cast', 'each', 'instantiate', 'descriptor',
     'fork', 'join', 'queue',
     'guid',
     'isFlaged', 'isFunction', 'isObject', 'isArray', 'isDefined', 'isString',

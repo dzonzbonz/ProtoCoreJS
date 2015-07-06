@@ -14,24 +14,29 @@
             
             function testArray() {
                 var array1 = new C.Collection.Array();
-                    array1.set('4', 'Some Value 1');
+                    array1.set('4', 'Some Value 4');
                     array1.set('1', 'Some Value 1');
-                    array1.set('6', 'Some Value 1');
-                    array1.set('3', 'Some Value 1');
-                    array1.set('2', 'Some Value 1');
-                    array1.set('8', 'Some Value 1');
+                    array1.set('6', 'Some Value 6');
+                    array1.set('3', 'Some Value 3');
+                    array1.set('2', 'Some Value 2');
+                    array1.set('8', 'Some Value 8');
+                    array1.data('array1', 'array1');
                     
                 var array2 = new C.Collection.Array();
-                    array2.set('40', 'Some Value 1');
-                    array2.set('10', 'Some Value 1');
-                    array2.set('60', 'Some Value 1');
-                    array2.set('30', 'Some Value 1');
-                    array2.set('20', 'Some Value 1');
-                    array2.set('80', 'Some Value 1');
+                    array2.set('40', 'Some Value 40');
+                    array2.set('10', 'Some Value 10');
+                    array2.set('60', 'Some Value 60');
+                    array2.set('30', 'Some Value 30');
+                    array2.set('20', 'Some Value 20');
+                    array2.set('80', 'Some Value 80');
+                    array2.data('array2', 'array2');
                     
-                    $('#array1').html(JSON.stringify(array1.toJSAN()));
+                    $('#array1').html(JSON.stringify(array1.toJSON()));
                     array1.sort();
-                    $('#array2').html(JSON.stringify(array1.toJSAN()));
+                    $('#array2').html(JSON.stringify(array1.serialize()));
+                    $('#array3').html(JSON.stringify(C.serialize(array1)));
+                    
+                    $('#array4').html(JSON.stringify(C.serialize(array2)));
             }
             
             function httpRequest() {
@@ -99,46 +104,76 @@
             $(document).ready(function () {
                 
                 var CParentClass = function () {
-
+                    var parent = new C.Enviroment.Object();
+                        C.extend(this, parent);
+                    
                     this.baseMethod = function () {
                         $("#extend1Message").html('Base method');
                     };
 
+                    this.parentMethod = function () {
+                        $("#extend1Message").html('Base method');
+                    };
+
                 };
+                
+                CParentClass.prototype = new C.Enviroment.Object();
+                CParentClass.prototype.constructor = CParentClass;
+                C.constructable(CParentClass, 'CParentClass');
 
                 var CChildClass = function () {
 
                     var parent = new CParentClass();
-                    C.extend(this, parent);
+                        C.extend(this, parent);
 
                     this.baseMethod = function () {
                         parent.baseMethod();
                         $("#extend2Message").html('Overrided method');
                     };
+                    
+                    this.childMethod = function () {
+                        $("#extend1Message").html('Base method');
+                    };
                 };
 
-                var extendInstance = new CChildClass();
-                extendInstance.baseMethod();
+                CChildClass.prototype = new CParentClass();
+                CChildClass.prototype.constructor = CChildClass;
+                C.constructable(CChildClass, 'CChildClass');
 
-                var CObject = new C.Enviroment.Object();
-                CObject.data({
-                    'value': 1
-                });
-                
-                $('#objectDataSet').html(JSON.stringify({
-                    'value': 1
-                }));
-                
-                $('#objectDataGet').html(JSON.stringify(CObject.data()));
-                
-                var CEvent = new C.Enviroment.EventData({
-                    'value': 1
-                });
-                
-                $('#eventDataSet').html(JSON.stringify({
-                    'value': 1
-                }));
-                
+                var extendInstance = new CChildClass();
+                var extendInstance2 = new CParentClass();
+                    
+                    extendInstance.data('array1', 'array1');
+                    extendInstance2.data('array2', 'array2');
+
+                    $('#extend1Message').html(JSON.stringify(C.serialize(extendInstance)));
+                    $('#extend2Message').html(JSON.stringify(C.serialize(extendInstance2)));
+        
+//                    extendInstance.baseMethod();
+
+
+
+//console.log(extendInstance);
+//
+//                var CObject = new C.Enviroment.Object();
+//                CObject.data({
+//                    'value': 1
+//                });
+//                
+//                $('#objectDataSet').html(JSON.stringify({
+//                    'value': 1
+//                }));
+//                
+//                $('#objectDataGet').html(JSON.stringify(CObject.data()));
+//                
+//                var CEvent = new C.Enviroment.EventData({
+//                    'value': 1
+//                });
+//                
+//                $('#eventDataSet').html(JSON.stringify({
+//                    'value': 1
+//                }));
+//                console.log();
 //                $('#eventDataGet').html(JSON.stringify(CEvent.data()));
 //                for (var i = 1; i < 200; i++) {
 //                    Multithread.process(

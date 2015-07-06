@@ -9,7 +9,7 @@ C.Collection.Storage = function () {
 
     /* Inheritance */
     var parent = new C.Collection.Array();
-    C.extend(this, parent, 'C.Collection.Storage', 'C.Collection.Array');
+        C.extend(this, parent);
 
     /**
      * @param {string} uri

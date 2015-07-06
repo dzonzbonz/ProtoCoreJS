@@ -10,13 +10,13 @@
 C.Collection.Array = function () {
     /* Inheritance */
     var parent = new C.Collection.Base();
-    C.extend(this, parent);
-
+        C.extend(this, parent);
+        
     this.merge = function (collection, forceType) {
         var instance = this;
         forceType = C.ifDefined(forceType, false);
 
-        C.traverse(collection, function (_field, _value) {
+        C.each(collection, function (_field, _value) {
             if (!C.isFunction(_value)) {
                 if (!forceType && (_value == null || !(_value instanceof C.Collection.Base))) {
                     instance.set(_field, _value);
@@ -77,7 +77,7 @@ C.Collection.Array = function () {
     };
 
     this.reverseInDepth = function () {
-        this.eachInDepth(function (_key, _val) {
+        this.traverseInDepth(function (_key, _val) {
             if (_val instanceof C.Collection.Base) {
                 _val.reverse();
             }
@@ -87,7 +87,7 @@ C.Collection.Array = function () {
     };
 
     this.shuffleInDepth = function () {
-        this.eachInDepth(function (_key, _val) {
+        this.traverseInDepth(function (_key, _val) {
             if (_val instanceof C.Collection.Base) {
                 _val.shuffle();
             }
@@ -96,6 +96,7 @@ C.Collection.Array = function () {
         return this;
     };
 };
+
 C.Collection.Array.prototype = new C.Collection.Base();
 C.Collection.Array.prototype.constructor = C.Collection.Array;
 C.mode(C.Collection, 'Array', C.MODE_LOCKED);

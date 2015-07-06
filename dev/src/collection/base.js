@@ -4,13 +4,13 @@
  */
 C.Collection.Base = function () {
     /* Variables */
-    var _keys = [],
-        _vals = [],
-        _unique = false;
+    var _keys = [];
+    var _vals = [];
+    var _unique = false;
 
     /* Inheritance */
     var parent = new C.Enviroment.Object();
-    C.extend(this, parent);
+        C.extend(this, parent);
 
     /* Implementation */
     /**
@@ -158,7 +158,7 @@ C.Collection.Base = function () {
      * Merge any array or object type data 
      */
     this.merge = function (collection) {
-        C.traverse(collection, function (_field, _value) {
+        C.each(collection, function (_field, _value) {
             this.set(_field, _value);
         });
     };
@@ -597,7 +597,7 @@ C.Collection.Base = function () {
 
         var _ret = [];
         var self = this;
-        C.traverse(_keys, function (_index, _key) {
+        C.each(_keys, function (_index, _key) {
             var _result = callback.apply(self, [_key, _vals[_index]]);
 
             if (results) {
@@ -618,48 +618,39 @@ C.Collection.Base = function () {
     /* Common */
     this.toJSON = function () {
         var _ret = parent.toJSON.call(this);
-
-        for (var _index in _keys) {
-            var k = _keys[_index];
+            _ret['collection'] = {};
+            
+        C.each(_keys, function (_index, _key) {
             var v = _vals[_index];
             if (v instanceof C.Enviroment.Object) {
-                _ret[k] = v.toJSON();
+                _ret['collection'][_key] = v.toJSON();
             } else {
-                _ret[k] = v;
+                _ret['collection'][_key] = C.serialize(v);
             }
-        }
-        return _ret;
-    };
-
-    this.toJSAN = function () {
-        var _ret = parent.toJSAN.call(this);
-            _ret[2] = [];
-        for (var _index in _keys) {
-            var v = _vals[_index];
-            if (v instanceof C.Enviroment.Object) {
-                _ret[2].push({
-                    key: _keys[_index],
-                    val: v.toJSON()
-                });
-            } else {
-                _ret[2].push({
-                    key: _keys[_index],
-                    val: v
-                });
-            }
-        }
-        return _ret;
-    };
-
-    this.serialize = function () {
-        var serialized = parent.serialize.call(this);
-        serialized['unique'] = _unique;
-        serialized['collection'] = {};
-        
-        C.traverse(_keys, function (_index, _key) {
-            serialized['collection'][_key] = C.serialize(_vals[_index]);
         });
 
+        return _ret;
+    };
+
+//    this.toJSAN = function () {
+//        var _ret = parent.toJSAN.call(this);
+//            _ret[2] = ["collection", []];
+//            
+//        C.traverse(_keys, function (_index, _key) {
+//            var v = _vals[_index];
+//            if (v instanceof C.Enviroment.Object) {
+//                _ret[2][1].push([ _keys[_index], v.toJSAN() ]);
+//            } else {
+//                _ret[2][1].push([ _keys[_index], C.serialize(v) ]);
+//            }
+//        });
+//            
+//        return _ret;
+//    };
+
+    this.serialize = function () {
+        var serialized = this.toJSON();
+            serialized['unique'] = _unique;
         return serialized;
     };
 
@@ -674,7 +665,7 @@ C.Collection.Base = function () {
         }
 
         if (serialized['collection']) {
-            C.traverse(serialized['collection'], function (key, value) {
+            C.each(serialized['collection'], function (key, value) {
                 self.queue(key, C.unserialize(value));
             });
         }

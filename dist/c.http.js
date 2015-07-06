@@ -1,7 +1,7 @@
 /** @license
  * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
  * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
- * v0.0.1 (2015/06/29 11:50)
+ * v0.0.1 (2015/07/06 14:50)
  */
 
 (function () {
@@ -129,7 +129,7 @@ C.factory(C.Http, 'Data', function () {
             var content = '';
             var self = this;
             
-            C.traverse(data, function (dataKey, dataValue) {
+            C.each(data, function (dataKey, dataValue) {
                 var finalKey = (C.isDefined(key) && key != null)
                             ? key + '[' + dataKey + ']'
                             : dataKey;
@@ -155,7 +155,7 @@ C.factory(C.Http, 'Data', function () {
             var query = '';
             var self = this;
             
-            C.traverse(data, function (dataKey, dataValue) {
+            C.each(data, function (dataKey, dataValue) {
                 var finalKey = (C.isDefined(key) && key != null)
                             ? key + '[' + dataKey + ']'
                             : dataKey;
@@ -573,7 +573,7 @@ C.factory(C.Http, 'Request', function () {
         this.setHeaders = function (val) {
             var isArray = C.isArray(val);
             
-            C.traverse(val, function (sendHeaderName, sendHeaderValue) {
+            C.each(val, function (sendHeaderName, sendHeaderValue) {
                 if (isArray) {
                     self.setHeader(sendHeaderValue);
                 }
@@ -620,7 +620,7 @@ C.factory(C.Http, 'Request', function () {
         var self = this;
 
         if (C.isDefined(settings)) {
-            C.traverse(settings, function (key, value) {
+            C.each(settings, function (key, value) {
                 switch (key) {
                     case 'method':
                         self.setMethod(value);
@@ -783,7 +783,7 @@ C.factory(C.Http.Client, function () {
             }
         }
         
-        C.traverse(r.getHeaders(), function (sendHeaderName, sendHeaderValue) {
+        C.each(r.getHeaders(), function (sendHeaderName, sendHeaderValue) {
             req.setRequestHeader(sendHeaderName, sendHeaderValue);
         });
         

@@ -135,7 +135,7 @@ C.factory(C.Http, 'Request', function () {
         this.setHeaders = function (val) {
             var isArray = C.isArray(val);
             
-            C.traverse(val, function (sendHeaderName, sendHeaderValue) {
+            C.each(val, function (sendHeaderName, sendHeaderValue) {
                 if (isArray) {
                     self.setHeader(sendHeaderValue);
                 }
@@ -182,7 +182,7 @@ C.factory(C.Http, 'Request', function () {
         var self = this;
 
         if (C.isDefined(settings)) {
-            C.traverse(settings, function (key, value) {
+            C.each(settings, function (key, value) {
                 switch (key) {
                     case 'method':
                         self.setMethod(value);

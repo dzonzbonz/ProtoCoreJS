@@ -1,7 +1,7 @@
 /** @license
  * protocore-js <https://github.com/dzonzbonz/ProtoCoreJS>
  * Author: Nikola Ivanovic - Dzonz Bonz | MIT License
- * v0.0.1 (2015/06/29 11:50)
+ * v0.0.1 (2015/07/06 14:50)
  */
 
 (function () {
@@ -14,13 +14,13 @@ var factory = function (C) {
  */
 C.Collection.Base = function () {
     /* Variables */
-    var _keys = [],
-        _vals = [],
-        _unique = false;
+    var _keys = [];
+    var _vals = [];
+    var _unique = false;
 
     /* Inheritance */
     var parent = new C.Enviroment.Object();
-    C.extend(this, parent);
+        C.extend(this, parent);
 
     /* Implementation */
     /**
@@ -168,7 +168,7 @@ C.Collection.Base = function () {
      * Merge any array or object type data 
      */
     this.merge = function (collection) {
-        C.traverse(collection, function (_field, _value) {
+        C.each(collection, function (_field, _value) {
             this.set(_field, _value);
         });
     };
@@ -361,46 +361,133 @@ C.Collection.Base = function () {
 
         return this;
     };
+    
+    function _comparableCollection(from) {
+        switch (from) {
+            case 'key':
+                return _keys;
+                break;
+            case 'value':
+                return _vals;
+                break;
+        }
+    };
+    
+    var COMPARE_LT = 'LT',
+        COMPARE_LTE = 'LTE',
+        COMPARE_EQ = 'EQ',
+        COMPARE_GTE = 'GTE',
+        COMPARE_GT = 'GT';
+    
+    function _comparableString(a, b, type) {
+        switch (type) {
+            case COMPARE_LT:
+                return a < b;
+                break;
+            case COMPARE_LTE:
+                return a <= b;
+                break;
+            case COMPARE_EQ:
+                return a == b;
+                break;
+            case COMPARE_GTE:
+                return a >= b;
+                break;
+            case COMPARE_GT:
+                return a > b;
+                break;
+        }
+    };
+    
+    function _comparableNumber(a, b, type) {
+        switch (type) {
+            case COMPARE_LT:
+                return a < b;
+                break;
+            case COMPARE_LTE:
+                return a <= b;
+                break;
+            case COMPARE_EQ:
+                return a == b;
+                break;
+            case COMPARE_GTE:
+                return a >= b;
+                break;
+            case COMPARE_GT:
+                return a > b;
+                break;
+        }
+    };
+    
+    function _comparableDate(a, b, type) {
+        
+    };
+    
     /**
      * Sort items
      */
-    this.sort = function (order) {
+    this.sort = function (order, by, comparer) {
         order = C.ifDefined(order, 'asc');
+        by = C.ifDefined(by, 'key');
+        
+        if (!C.isDefined(comparer)) {
+            comparer = _comparableString;
+        } else if (C.isString(comparer)) {
+            switch (comparer) {
+                case 'string':
+                    comparer = _comparableString;
+                    break;
+                case 'number':
+                    comparer = _comparableNumber;
+                    break;
+                case 'date':
+                    comparer = _comparableDate;
+                    break;
+            }
+        }
+        
+        comparer = C.ifDefined(comparer, _comparableString);
 
 //		var _iterations = 0;
         var _order = order == 'asc' ? 1 : -1;
+        var _by = by;
+        
+        var _collection = _comparableCollection(_by);
+        
         if (this.count() > 1) {
-            var _lowerValue = _keys[_keys.length - 1],
-                _lowerPointer = _keys.length - 1,
-                _upperValue = _keys[_keys.length - 1],
-                _upperPointer = _keys.length - 1,
+            var _lowerValue = _collection[_collection.length - 1],
+                _lowerPointer = _collection.length - 1,
+                _upperValue = _collection[_collection.length - 1],
+                _upperPointer = _collection.length - 1,
                 _lastPointer = _upperPointer,
                 _lastValue = _upperValue,
                 _newPointer = _upperPointer,
-                _count = _keys.length;
+                _count = _collection.length;
 
             for (var _index = 0; _index < _count - 1; _index++) {
 
-                var _value = _keys[0];
+                var _value = _collection[0];
 
 //              _iterations++;
 
                 if (_value >= _upperValue && _order > 0
-                        ||
-                        _value <= _upperValue && _order < 0)
-                {
+                    ||
+                    _value <= _upperValue && _order < 0
+                ) {
                     // MOVE TO THE SORTED END
                     _upperValue = _value;
                     _newPointer = _upperPointer;
-                } else if (
+                } 
+                else if (
                     _value <= _lowerValue && _order > 0
                     ||
-                    _value >= _lowerValue && _order < 0)
-                {
+                    _value >= _lowerValue && _order < 0
+                ) {
                     // MOVE TO THE SORTED BEGINING
                     _lowerValue = _value;
                     _newPointer = _lowerPointer - 1;
-                } else {
+                } 
+                else {
 //				} else if (_value > _lowerValue && _value < _upperValue) {
                     // MOVE TO THE SORTED PART VIA NEAR BINARY SEARCH
                     // WE ASSUME THAT BETWEEN LOWER AND UPPER BOUND EVERYTHING IS SORTED
@@ -411,11 +498,14 @@ C.Collection.Base = function () {
                         _pivotDiff = 0,
                         _pivotOrder = 0;
 
-                    if (_lastValue < _value && _order > 0 ||
-                            _lastValue > _value && _order < 0) {
+                    if (_lastValue < _value && _order > 0 
+                        ||
+                        _lastValue > _value && _order < 0
+                    ) {
                         // SET NEW LOWER BOUND
                         _lowerBound = _lastPointer;
-                    } else {
+                    } 
+                    else {
                         // SET NEW UPPER BOUND
                         _upperBound = _lastPointer;
                     }
@@ -425,7 +515,7 @@ C.Collection.Base = function () {
 //						if (_iterations > 50) break;
 
                         _pivotPointer = ((_lowerBound + _upperBound) >> 1);
-                        _pivotValue = _keys[_pivotPointer];
+                        _pivotValue = _collection[_pivotPointer];
                         _pivotDiff = _value === _pivotValue ? 0 : (_value > _pivotValue ? 1 : -1);
                         _pivotOrder = _order * _pivotDiff;
 
@@ -436,7 +526,8 @@ C.Collection.Base = function () {
                         if (_pivotOrder > 0) {
                             // GO TO UPPER POINTER
                             _lowerBound = _pivotPointer;
-                        } else if (_pivotOrder < 0) {
+                        } 
+                        else if (_pivotOrder < 0) {
                             // GO TO LOWER POINTER
                             _upperBound = _pivotPointer;
                         }
@@ -516,7 +607,7 @@ C.Collection.Base = function () {
 
         var _ret = [];
         var self = this;
-        C.traverse(_keys, function (_index, _key) {
+        C.each(_keys, function (_index, _key) {
             var _result = callback.apply(self, [_key, _vals[_index]]);
 
             if (results) {
@@ -537,48 +628,39 @@ C.Collection.Base = function () {
     /* Common */
     this.toJSON = function () {
         var _ret = parent.toJSON.call(this);
-
-        for (var _index in _keys) {
-            var k = _keys[_index];
+            _ret['collection'] = {};
+            
+        C.each(_keys, function (_index, _key) {
             var v = _vals[_index];
             if (v instanceof C.Enviroment.Object) {
-                _ret[k] = v.toJSON();
+                _ret['collection'][_key] = v.toJSON();
             } else {
-                _ret[k] = v;
+                _ret['collection'][_key] = C.serialize(v);
             }
-        }
-        return _ret;
-    };
-
-    this.toJSAN = function () {
-        var _ret = parent.toJSAN.call(this);
-            _ret[2] = [];
-        for (var _index in _keys) {
-            var v = _vals[_index];
-            if (v instanceof C.Enviroment.Object) {
-                _ret[2].push({
-                    key: _keys[_index],
-                    val: v.toJSON()
-                });
-            } else {
-                _ret[2].push({
-                    key: _keys[_index],
-                    val: v
-                });
-            }
-        }
-        return _ret;
-    };
-
-    this.serialize = function () {
-        var serialized = parent.serialize.call(this);
-        serialized['unique'] = _unique;
-        serialized['collection'] = {};
-        
-        C.traverse(_keys, function (_index, _key) {
-            serialized['collection'][_key] = C.serialize(_vals[_index]);
         });
 
+        return _ret;
+    };
+
+//    this.toJSAN = function () {
+//        var _ret = parent.toJSAN.call(this);
+//            _ret[2] = ["collection", []];
+//            
+//        C.traverse(_keys, function (_index, _key) {
+//            var v = _vals[_index];
+//            if (v instanceof C.Enviroment.Object) {
+//                _ret[2][1].push([ _keys[_index], v.toJSAN() ]);
+//            } else {
+//                _ret[2][1].push([ _keys[_index], C.serialize(v) ]);
+//            }
+//        });
+//            
+//        return _ret;
+//    };
+
+    this.serialize = function () {
+        var serialized = this.toJSON();
+            serialized['unique'] = _unique;
         return serialized;
     };
 
@@ -593,7 +675,7 @@ C.Collection.Base = function () {
         }
 
         if (serialized['collection']) {
-            C.traverse(serialized['collection'], function (key, value) {
+            C.each(serialized['collection'], function (key, value) {
                 self.queue(key, C.unserialize(value));
             });
         }
@@ -620,13 +702,13 @@ C.constructable(C.Collection.Base, 'C.Collection.Base');
 C.Collection.Array = function () {
     /* Inheritance */
     var parent = new C.Collection.Base();
-    C.extend(this, parent);
-
+        C.extend(this, parent);
+        
     this.merge = function (collection, forceType) {
         var instance = this;
         forceType = C.ifDefined(forceType, false);
 
-        C.traverse(collection, function (_field, _value) {
+        C.each(collection, function (_field, _value) {
             if (!C.isFunction(_value)) {
                 if (!forceType && (_value == null || !(_value instanceof C.Collection.Base))) {
                     instance.set(_field, _value);
@@ -687,7 +769,7 @@ C.Collection.Array = function () {
     };
 
     this.reverseInDepth = function () {
-        this.eachInDepth(function (_key, _val) {
+        this.traverseInDepth(function (_key, _val) {
             if (_val instanceof C.Collection.Base) {
                 _val.reverse();
             }
@@ -697,7 +779,7 @@ C.Collection.Array = function () {
     };
 
     this.shuffleInDepth = function () {
-        this.eachInDepth(function (_key, _val) {
+        this.traverseInDepth(function (_key, _val) {
             if (_val instanceof C.Collection.Base) {
                 _val.shuffle();
             }
@@ -706,6 +788,7 @@ C.Collection.Array = function () {
         return this;
     };
 };
+
 C.Collection.Array.prototype = new C.Collection.Base();
 C.Collection.Array.prototype.constructor = C.Collection.Array;
 C.mode(C.Collection, 'Array', C.MODE_LOCKED);
@@ -721,7 +804,7 @@ C.Collection.Storage = function () {
 
     /* Inheritance */
     var parent = new C.Collection.Array();
-    C.extend(this, parent, 'C.Collection.Storage', 'C.Collection.Array');
+        C.extend(this, parent);
 
     /**
      * @param {string} uri
